@@ -34,6 +34,7 @@ function createPlayField() {
     var geometry = new THREE.PlaneGeometry(10, 20);
     var material = new THREE.MeshLambertMaterial({color: 0x156289});
     var plane = new THREE.Mesh(geometry, material);
+    plane.position.set(0,0,0);
 
     var lineGeometry = new THREE.PlaneGeometry(10, 0.5);
     var lineMaterial = new THREE.MeshLambertMaterial({color: 0xFFFFFF});
@@ -45,7 +46,11 @@ function createPlayField() {
 }
 
 function createWalls() {
-    var leftWall
+    var leftWallGeometry = new THREE.BoxGeometry(1, 20, 1);
+    var leftWallMaterial = new THREE.MeshLambertMaterial({color: 0xd1ffde});
+    var leftWall = new THREE.Mesh(leftWallGeometry, leftWallMaterial);
+    leftWall.position.set(-5.5, 0, 0.5);
+    scene.add(leftWall);
 }
 
 function createPaddles() {
