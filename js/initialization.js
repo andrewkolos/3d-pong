@@ -1,7 +1,7 @@
 function init() {
     scene = new THREE.Scene();
 
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setClearColor(0x000000, 1.0);
     renderer.setSize(WIDTH, HEIGHT);
     renderer.shadowMapEnabled = true;
@@ -34,7 +34,14 @@ function createPlayField() {
     var geometry = new THREE.PlaneGeometry(10, 20);
     var material = new THREE.MeshLambertMaterial({color: 0x156289});
     var plane = new THREE.Mesh(geometry, material);
+
+    var lineGeometry = new THREE.PlaneGeometry(10, 0.5);
+    var lineMaterial = new THREE.MeshLambertMaterial({color: 0xFFFFFF});
+    var line = new THREE.Mesh(lineGeometry, lineMaterial);
+    line.position.set(0, 0.2, 0);
+
     scene.add(plane);
+    scene.add(line);
 }
 
 function createWalls() {
