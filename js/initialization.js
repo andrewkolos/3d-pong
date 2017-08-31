@@ -98,8 +98,8 @@ function createPaddles() {
 }
 
 function createScoreBoard() {
-    var boardGeometry = new THREE.BoxGeometry(SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT, SCOREBOARD_DEPTH);
-    var boardMaterial = new THREE.MeshLambertMaterial({ color: SCOREBOARD_COLOR});
+    var boardGeometry = new THREE.BoxGeometry(SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT, SCOREBOARD_DEPTH, 32, 32, 32);
+    var boardMaterial = new THREE.MeshPhongMaterial({ color: SCOREBOARD_COLOR});
     scoreboardBase = new THREE.Mesh(boardGeometry, boardMaterial);
     scoreboardBase.position.set(SCOREBOARD_POS_X, SCOREBOARD_POS_Y, SCOREBOARD_POS_Z);
     scoreboardBase.castShadow = true;
@@ -159,11 +159,11 @@ function createSpotlight() {
     dirLight1.shadow.camera.bottom = -10;
     scene.add(dirLight1);
 
-    scoreboardLight = new THREE.SpotLight(0xffffff, 5);
-    scoreboardLight.position.set(SCOREBOARD_POS_X, SCOREBOARD_POS_Y - 5, SCOREBOARD_POS_Z - 10);
+    scoreboardLight = new THREE.SpotLight(0xffffff, 2);
+    scoreboardLight.position.set(SCOREBOARD_POS_X, SCOREBOARD_POS_Y - 3, SCOREBOARD_POS_Z - 10);
     scoreboardLight.target = scoreboardBase;
-    scoreboardLight.angle = 0.75;
-    scoreboardLight.distance = 25;
+    scoreboardLight.angle = 1;
+    scoreboardLight.distance = 14;
     scoreboardLight.castShadow = true;
     scoreboardLight.shadow.camera.near = 0.1;
     scoreboardLight.shadow.camera.far = scoreboardLight.distance;
@@ -171,13 +171,13 @@ function createSpotlight() {
     scene.add(scoreboardLight);
 
 
-    var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0);
+    var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6);
     hemiLight.color.setHSL( 0.6, 1, 0.6 );
     hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
     hemiLight.position.set( 0, 0, 10 );
     scene.add( hemiLight );
 
-    var ambientLight = new THREE.AmbientLight(0xffffff, 0);
+    var ambientLight = new THREE.AmbientLight(0xffffff, 0.10);
     scene.add(ambientLight);
 
     if (DEBUG) {
