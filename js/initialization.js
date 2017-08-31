@@ -35,12 +35,14 @@ function init() {
 }
 
 function render() {
+
+
     renderer.render(scene, camera);
 }
 
 function createPlayField() {
     function createPlayPlane(color, length, offset) {
-        var geometry = new THREE.PlaneGeometry(PLAYFIELD_WIDTH, length);
+        var geometry = new THREE.PlaneGeometry(PLAYFIELD_WIDTH, length, 32, 32);
         var material = new THREE.MeshLambertMaterial({color: color});
         var plane = new THREE.Mesh(geometry, material);
         plane.material.side = THREE.DoubleSide;
@@ -96,7 +98,39 @@ function createPaddles() {
 }
 
 function createScoreBoard() {
+    var boardGeometry = new THREE.BoxGeometry(SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT, SCOREBOARD_DEPTH);
+    var boardMaterial = new THREE.MeshLambertMaterial({ color: SCOREBOARD_COLOR});
+    scoreboardBase = new THREE.Mesh(boardGeometry, boardMaterial);
+    scoreboardBase.position.set(SCOREBOARD_POS_X, SCOREBOARD_POS_Y, SCOREBOARD_POS_Z);
+    scoreboardBase.castShadow = true;
+    scoreboardBase.receiveShadow = true;
 
+    scene.add(scoreboardBase);
+
+    var loader = new THREE.FontLoader();
+
+    loader.load('fonts/helvetiker_regular.typeface.json', function(font) {
+        var playerTextGeometry = new THREE.TextGeometry("Player Score", {
+            font: font,
+            size: 1,
+            height: 0,
+            curveSegments: 12,
+            bevelEnabled: true,
+            bevelThickness: .05,
+            bevelSize: .05,
+            bevelSegments: 5
+        });
+
+        var material = new THREE.MeshLambertMaterial({ color: PADDLE_PLAYER_COLOR});
+        var mesh = new THREE.Mesh(playerTextGeometry, material);
+        mesh.rotation.x = 90 * Math.PI / 180;
+        mesh.receiveShadow = true;
+        mesh.castShadow = true;
+
+        mesh.position.set(SCOREBOARD_POS_X-SCOREBOARD_WIDTH/2, SCOREBOARD_POS_Y-0.25, SCOREBOARD_POS_Z);
+        scene.add(mesh);
+        render();
+    });
 }
 
 function createBall() {
@@ -114,25 +148,28 @@ function createSpotlight() {
     // We choose directional light as it can be used to simulate sunlight.
     // See three.js documentation.
 
-    var light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(-7, 0, 8);
-    light.castShadow = true; // expensive
-    light.shadowCameraVisible = true;
-    light.shadowDarkness = 1;
-    light.shadowCameraNear = 3;
-    light.shadowCameraFar = camera.far;
-    //light.shadow.mapSize.width = 29;
-    //light.shadow.mapSize.height = 20;
-    light.shadowCameraLeft = -7;
-    light.shadowCameraRight = 7;
-    light.shadowCameraTop = 10;
-    light.shadowCameraBottom = -10;
-    scene.add(light);
+    var dirLight1 = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight1.position.set(-7, 0, 8);
+    dirLight1.castShadow = true; // expensive
+    dirLight1.shadow.camera.near = 4;
+    dirLight1.shadow.camera.far = camera.far;
+    dirLight1.shadow.camera.left = -7;
+    dirLight1.shadow.camera.right= 7;
+    dirLight1.shadow.camera.top = 10;
+    dirLight1.shadow.camera.bottom = -10;
+    scene.add(dirLight1);
 
-    var dirHelper = new THREE.DirectionalLightHelper(light);
-    scene.add(dirHelper);
+    scoreboardLight = new THREE.SpotLight(0xffffff, 1);
+    scoreboardLight.position.set(SCOREBOARD_POS_X, SCOREBOARD_POS_Y - 0.25, SCOREBOARD_POS_Z - 10);
+    scoreboardLight.target = scoreboardBase;
+    scoreboardLight.castShadow = true;
+    scoreboardLight.rotation.x = 260 * Math.PI / 180;
+    scoreboardLight.angle = 1;
+    scoreboardLight.distance = 8;
+    scoreboardLight.shadow.camera.near = 0.1;
+    scoreboardLight.shadow.camera.far = camera.far;
+    scene.add(scoreboardLight);
 
-    scene.add(new THREE.CameraHelper(light.shadow.camera));
 
     var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6);
     hemiLight.color.setHSL( 0.6, 1, 0.6 );
@@ -143,6 +180,13 @@ function createSpotlight() {
     var ambientLight = new THREE.AmbientLight(0xffffff, .10);
     scene.add(ambientLight);
 
-    var hemiHelper = new THREE.HemisphereLightHelper(hemiLight);
-    scene.add(hemiHelper);
+    if (DEBUG) {
+        var dirHelper = new THREE.DirectionalLightHelper(dirLight1);
+        scene.add(dirHelper);
+        scene.add(new THREE.CameraHelper(dirLight1.shadow.camera));
+        var hemiHelper = new THREE.HemisphereLightHelper(hemiLight);
+        scene.add(hemiHelper);
+        scene.add(new THREE.SpotLightHelper(scoreboardLight));
+        scene.add(new THREE.CameraHelper(scoreboardLight.shadow.camera));
+    }
 }
