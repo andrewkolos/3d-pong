@@ -159,25 +159,25 @@ function createSpotlight() {
     dirLight1.shadow.camera.bottom = -10;
     scene.add(dirLight1);
 
-    scoreboardLight = new THREE.SpotLight(0xffffff, 1);
-    scoreboardLight.position.set(SCOREBOARD_POS_X, SCOREBOARD_POS_Y - 0.25, SCOREBOARD_POS_Z - 10);
+    scoreboardLight = new THREE.SpotLight(0xffffff, 5);
+    scoreboardLight.position.set(SCOREBOARD_POS_X, SCOREBOARD_POS_Y - 5, SCOREBOARD_POS_Z - 10);
     scoreboardLight.target = scoreboardBase;
+    scoreboardLight.angle = 0.75;
+    scoreboardLight.distance = 25;
     scoreboardLight.castShadow = true;
-    scoreboardLight.rotation.x = 260 * Math.PI / 180;
-    scoreboardLight.angle = 1;
-    scoreboardLight.distance = 8;
     scoreboardLight.shadow.camera.near = 0.1;
-    scoreboardLight.shadow.camera.far = camera.far;
+    scoreboardLight.shadow.camera.far = scoreboardLight.distance;
+    scoreboardLight.target.updateMatrixWorld();
     scene.add(scoreboardLight);
 
 
-    var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6);
+    var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0);
     hemiLight.color.setHSL( 0.6, 1, 0.6 );
     hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
     hemiLight.position.set( 0, 0, 10 );
     scene.add( hemiLight );
 
-    var ambientLight = new THREE.AmbientLight(0xffffff, .10);
+    var ambientLight = new THREE.AmbientLight(0xffffff, 0);
     scene.add(ambientLight);
 
     if (DEBUG) {
