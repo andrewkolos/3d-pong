@@ -88,8 +88,8 @@ function createPaddles() {
         return paddle;
     }
 
-    playerPaddle = createPaddle(PADDLE_PLAYER_COLOR, - (PLAYFIELD_HEIGHT / 2) + PADDLE_HEIGHT/ 2);
-    computerPaddle = createPaddle(PADDLE_COMPUTER_COLOR, PLAYFIELD_HEIGHT / 2);
+    playerPaddle = createPaddle(PADDLE_PLAYER_COLOR, - (PLAYFIELD_HEIGHT / 2) + PADDLE_HEIGHT / 2);
+    computerPaddle = createPaddle(PADDLE_COMPUTER_COLOR, PLAYFIELD_HEIGHT / 2 - PADDLE_HEIGHT / 2);
 
     scene.add(playerPaddle)
     scene.add(computerPaddle);
