@@ -10,7 +10,9 @@ var dx = INIT_DX;
 var dy = INIT_DY;
 var pause = 0;
 var server = playerPaddle;
+var ballIframes = 0;
 function moveBallAndPaddles() {
+    ballIframes--;
     if (pause > 0) {
         ball.position.x = server.position.x;
         ball.position.y = server.position.y + ((server.position.y < 0) ? PADDLE_HEIGHT * 2 : - PADDLE_HEIGHT);
@@ -64,28 +66,32 @@ function moveBallAndPaddles() {
         playRandomSound(sound_hits);
     }
 
-    computerHitbox = new THREE.Box3().setFromObject(computerPaddle);
-    if (ball.position.y > computerPaddle.position.y - computerHitbox.getSize().y &&
-        Math.abs(computerPaddle.position.x - ball.position.x) <= (computerHitbox.getSize().x / 2 )) { // hit computer paddle
-        dy += dy < 0 ? - BALL_SPEED_INCREASE_ON_PADDLE_HIT : BALL_SPEED_INCREASE_ON_PADDLE_HIT;
-        dy = -dy;
-        ball.position.y = computerPaddle.position.y - computerHitbox.getSize().y; // prevents ball getting stuck inside paddle
-        playRandomSound(sound_hits);
+    if (ballIframes <= 0) {
+        computerHitbox = new THREE.Box3().setFromObject(computerPaddle);
+        if (ball.position.y > computerPaddle.position.y - computerHitbox.getSize().y &&
+            Math.abs(computerPaddle.position.x - ball.position.x) <= (computerHitbox.getSize().x / 2  + 0.5)) { // hit computer paddle
+            dy += dy < 0 ? -BALL_SPEED_INCREASE_ON_PADDLE_HIT : BALL_SPEED_INCREASE_ON_PADDLE_HIT;
+            dy = -dy;
+            ball.position.y = computerPaddle.position.y - computerHitbox.getSize().y; // prevents ball getting stuck inside paddle
+            ballIframes = 15;
+            playRandomSound(sound_hits);
+        }
+
+        playerHitbox = new THREE.Box3().setFromObject(playerPaddle);
+        var diff = playerPaddle.position.y - ball.position.y + PADDLE_HEIGHT;
+        if (diff < 1 && diff > -0.2 &&
+            Math.abs(playerPaddle.position.x - ball.position.x) <= (playerHitbox.getSize().x / 2 + BALL_RADIUS)) { // hit player paddle
+            dy += dy < 0 ? -BALL_SPEED_INCREASE_ON_PADDLE_HIT : BALL_SPEED_INCREASE_ON_PADDLE_HIT;
+            dy = -dy;
+            ball.position.y = playerPaddle.position.y + playerHitbox.getSize().y;
+            ballIframes = 15;
+            playRandomSound(sound_hits);
+        }
     }
 
-    playerHitbox = new THREE.Box3().setFromObject(playerPaddle);
-    var diff = playerPaddle.position.y - ball.position.y + PADDLE_HEIGHT;
-    if (diff  < 0.10 && diff > -0.10  &&
-        Math.abs(playerPaddle.position.x - ball.position.x) <= (playerHitbox.getSize().x / 2 + BALL_RADIUS)) { // hit player paddle
-        dy += dy < 0 ? - BALL_SPEED_INCREASE_ON_PADDLE_HIT : BALL_SPEED_INCREASE_ON_PADDLE_HIT;
-        dy = -dy;
-        ball.position.y = playerPaddle.position.y + playerHitbox.getSize().y;
-        playRandomSound(sound_hits);
-    }
+    var ballHeight = new THREE.Box3().setFromObject(ball).getSize().y;
+    if (ball.position.y > PLAYFIELD_HEIGHT / 2 + ballHeight) { // player score
 
-    if (ball.position.y > PLAYFIELD_HEIGHT / 2) { // player score
-        ball.position.y = PLAYFIELD_HEIGHT / 4;
-        ball.position.x = 0;
         dy = -INIT_DY;
         dx = continousRandom(MIN_DX, MAX_DX) * (Math.random() > 0.50 ? 1 : -1);
 
@@ -95,9 +101,7 @@ function moveBallAndPaddles() {
         playRandomSound(sounds_cheers);
     }
 
-    if (ball.position.y < -(PLAYFIELD_HEIGHT / 2) ) { // computer score
-        ball.position.y = -PLAYFIELD_HEIGHT/4;
-        ball.position.x = 0;
+    if (ball.position.y < -(PLAYFIELD_HEIGHT / 2) - ballHeight) { // computer score
         dy = INIT_DY;
         dx = continousRandom(MIN_DX, MAX_DX) * (Math.random() > 0.50 ? 1 : -1);
 
@@ -117,7 +121,6 @@ function playRandomSound(audioArray) {
     while (rand === last) {
         rand = getRandomInt(0, audioArray.length-1);
     }
-    //console.log(rand + " " + last);
     last = rand;
     audioArray[rand].play();
 }

@@ -14,7 +14,7 @@ function init() {
 
     scene.add(camera);
 
-    var controls = new THREE.OrbitControls(camera, renderer.domElement);
+    new THREE.OrbitControls(camera, renderer.domElement);
     //controls.addEventListener('change', render);
 
     createPlayField();
@@ -151,6 +151,24 @@ function createScoreBoard() {
             SCOREBOARD_POS_Y - 0.25,
             SCOREBOARD_POS_Z + SCOREBOARD_DEPTH / 4);
         scene.add(computerScoreMesh);
+
+        var ballSpeedGeometry = new THREE.TextGeometry("Ball Speed", {
+            font: font,
+            size: 0.8,
+            height: 0,
+            curveSegments: 4,
+            bevelEnabled: true,
+            bevelThickness: .20,
+            bevelSize: .04,
+            bevelSegments: 20
+        });
+        var ballSpeedMaterial = new THREE.MeshPhongMaterial({color: 0x673AB7});
+        ballSpeedMesh = new THREE.Mesh(ballSpeedGeometry, ballSpeedMaterial);
+        ballSpeedMesh.position.set(SCOREBOARD_POS_X, SCOREBOARD_POS_Y - 0.25, SCOREBOARD_POS_Z - SCOREBOARD_DEPTH /4);
+        ballSpeedMesh.rotation.x = 90 * Math.PI / 180;
+        //ballSpeedMesh.castShadow = true;
+        ballSpeedMesh.receiveShadow = true;
+        scene.add(ballSpeedMesh);
     });
 }
 
@@ -228,7 +246,15 @@ function loadSounds() {
 
     cheer = new Audio("sounds/cheer.mp3");
     cheer2 = new Audio("sounds/cheer2.mp3");
-    applause = new Audio("sounds/golfclap.mp3");
     ohno = new Audio("sounds/ohno.mp3");
-    sounds_cheers = [cheer, cheer2, applause];
+    sounds_cheers = [cheer, cheer2];
+
+    sound_targets_start = new Audio("sounds/targets_start.mp3");
+    sound_targets_start.volume = 0.4;
+    sound_targets_loop = new Audio("sounds/targets_loop.mp3");
+    sound_targets_loop.volume = 0.4;
+    sound_targets_loop.loop = true;
+    sound_targets_start.play();
+    sound_targets_start.onended = sound_targets_loop.play;
+
 }
