@@ -119,7 +119,7 @@ function createScoreBoard() {
     var loader = new THREE.FontLoader();
 
     loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
-        var playerTextGeometry = new THREE.TextGeometry("Player Score", {
+        var playerTextGeometry = new THREE.TextGeometry("Player", {
             font: font,
             size: 1,
             height: 0,
@@ -138,10 +138,10 @@ function createScoreBoard() {
 
         playerScoreMesh.position.set(SCOREBOARD_POS_X - SCOREBOARD_WIDTH / 2 + 1,
                             SCOREBOARD_POS_Y - 0.25,
-                            SCOREBOARD_POS_Z + SCOREBOARD_DEPTH / 4);
+                            SCOREBOARD_POS_Z + 0.80);
         scene.add(playerScoreMesh);
 
-        var computerTextGeometry = new THREE.TextGeometry("Computer Score", {
+        var computerTextGeometry = new THREE.TextGeometry("CPU", {
             font: font,
             size: 1,
             height: 0,
@@ -158,9 +158,9 @@ function createScoreBoard() {
         computerScoreMesh.receiveShadow = true;
         computerScoreMesh.castShadow = true;
 
-        computerScoreMesh.position.set(SCOREBOARD_POS_X + 1,
+        computerScoreMesh.position.set(SCOREBOARD_POS_X + 0.5,
             SCOREBOARD_POS_Y - 0.25,
-            SCOREBOARD_POS_Z + SCOREBOARD_DEPTH / 4);
+            SCOREBOARD_POS_Z + 0.80);
         scene.add(computerScoreMesh);
 
         var ballSpeedGeometry = new THREE.TextGeometry("Ball Speed", {
@@ -175,7 +175,7 @@ function createScoreBoard() {
         });
         var ballSpeedMaterial = new THREE.MeshPhongMaterial({color: 0x673AB7});
         ballSpeedMesh = new THREE.Mesh(ballSpeedGeometry, ballSpeedMaterial);
-        ballSpeedMesh.position.set(SCOREBOARD_POS_X, SCOREBOARD_POS_Y - 0.25, SCOREBOARD_POS_Z - SCOREBOARD_DEPTH /4);
+        ballSpeedMesh.position.set(SCOREBOARD_POS_X- SCOREBOARD_WIDTH / 2 + 1, SCOREBOARD_POS_Y - 0.25, SCOREBOARD_POS_Z - SCOREBOARD_DEPTH /4);
         ballSpeedMesh.rotation.x = 90 * Math.PI / 180;
         ballSpeedMesh.castShadow = true;
         ballSpeedMesh.receiveShadow = true;
