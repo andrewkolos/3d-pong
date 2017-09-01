@@ -36,11 +36,17 @@ function init() {
     gamepad = new PxGamepad();
     gamepad.start();
 
+    window.addEventListener('resize', onResize, false);
     document.body.appendChild(renderer.domElement);
 
     render();
 }
 
+function onResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
 
 
 function createPlayField() {
