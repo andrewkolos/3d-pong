@@ -20,3 +20,7 @@ var sound_loser;
 
 var sounds_hits;
 var sounds_cheers;
+
+var gamepad;
+
+var updateBallSpeed = function(ballSpeed, disableSpeedMeter) {};

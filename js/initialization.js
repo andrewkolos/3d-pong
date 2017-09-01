@@ -10,6 +10,8 @@ function init() {
     renderer.setSize(WIDTH, HEIGHT);
     renderer.shadowMap.enabled = true;
     renderer.shadowMapSoft = true;
+    ///renderer.shadowMap.type = THREE.BasicShadowMap;//THREE.PCFSoftShadowMap;
+    //renderer.shadowMap.renderReverseSided = false;
 
 
     scene.add(camera);
@@ -30,6 +32,9 @@ function init() {
     createLights();
 
     loadSounds();
+
+    gamepad = new PxGamepad();
+    gamepad.start();
 
     document.body.appendChild(renderer.domElement);
 
@@ -91,7 +96,7 @@ function createPaddles() {
     playerPaddle = createPaddle(PADDLE_PLAYER_COLOR, -(PLAYFIELD_HEIGHT / 2) + PADDLE_HEIGHT / 2);
     computerPaddle = createPaddle(PADDLE_COMPUTER_COLOR, PLAYFIELD_HEIGHT / 2 - PADDLE_HEIGHT / 2);
 
-    scene.add(playerPaddle)
+    scene.add(playerPaddle);
     scene.add(computerPaddle);
 }
 
@@ -166,9 +171,52 @@ function createScoreBoard() {
         ballSpeedMesh = new THREE.Mesh(ballSpeedGeometry, ballSpeedMaterial);
         ballSpeedMesh.position.set(SCOREBOARD_POS_X, SCOREBOARD_POS_Y - 0.25, SCOREBOARD_POS_Z - SCOREBOARD_DEPTH /4);
         ballSpeedMesh.rotation.x = 90 * Math.PI / 180;
-        //ballSpeedMesh.castShadow = true;
+        ballSpeedMesh.castShadow = true;
         ballSpeedMesh.receiveShadow = true;
         scene.add(ballSpeedMesh);
+
+        function createPlane(x, y, z, width, height, color) {
+            var geometry = new THREE.PlaneGeometry(width, height, 12, 12);
+            var material = new THREE.MeshBasicMaterial({color: color});
+            var mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(x, y, z)
+            mesh.rotation.x = Math.PI / 2;
+            scene.add(mesh);
+            return mesh;
+        }
+
+        var partCount = BALL_SPEED_METER_PART_COLORS.length;
+        var sepSize = BALL_SPEED_METER_SEPARATOR_SIZE;
+        var ballSpeedMeter = createPlane(BALL_SPEED_METER_POS_X, BALL_SPEED_METER_POS_Y, BALL_SPEED_METER_POS_Z, BALL_SPEED_METER_WIDTH, BALL_SPEED_METER_HEIGHT, BALL_SPEED_METER_COLOR);
+        var meterPartWidth = (BALL_SPEED_METER_WIDTH - sepSize) / partCount - sepSize;
+
+        var currentX = BALL_SPEED_METER_POS_X - BALL_SPEED_METER_WIDTH / 2 + sepSize + meterPartWidth / 2;
+        var meterParts = [];
+        for (var i = 0; i < partCount; i++) {
+            var part = createPlane(currentX, BALL_SPEED_METER_POS_Y - 0.01, BALL_SPEED_METER_POS_Z, meterPartWidth, BALL_SPEED_METER_HEIGHT - sepSize * 2, BALL_SPEED_METER_PART_COLORS[i]);
+            meterParts.push(part);
+            part.visible = false;
+
+            currentX += meterPartWidth + sepSize;
+        }
+
+        updateBallSpeed = function(ballSpeed, disableBallSpeed) {
+            if (disableBallSpeed) {
+               for (var i = 0; i < meterParts.length; i++) {
+                   meterParts[i].visible = false;
+               }
+            } else {
+                var speedPart = (BALL_SPEED_METER_MAX_SPEED - BALL_SPEED_METER_MIN_SPEED) / meterParts.length;
+                var currentSpeed = BALL_SPEED_METER_MIN_SPEED + speedPart;
+                meterParts[0].visible = true;
+                for (var i = 1; i < meterParts.length; i++) {
+                    meterParts[i].visible = ballSpeed > currentSpeed;
+                    currentSpeed += speedPart;
+                }
+            }
+        };
+
+        console.log("hi");
     });
 }
 
@@ -188,24 +236,29 @@ function createLights() {
     // See three.js documentation.
 
     var dirLight1 = new THREE.DirectionalLight(0xffffff, 1);
-    dirLight1.position.set(-7, 0, 8);
+    dirLight1.position.set(-7, -5, 8);
     dirLight1.castShadow = true; // expensive
     dirLight1.shadow.camera.near = 4;
     dirLight1.shadow.camera.far = camera.far;
     dirLight1.shadow.camera.left = -7;
     dirLight1.shadow.camera.right = 7;
-    dirLight1.shadow.camera.top = 10;
-    dirLight1.shadow.camera.bottom = -10;
+    dirLight1.shadow.camera.top = 13;
+    dirLight1.shadow.camera.bottom = -13;
+    dirLight1.shadow.mapSize.width = 1024;
+    dirLight1.shadow.mapSize.height = 1024;
     scene.add(dirLight1);
 
     scoreboardLight = new THREE.SpotLight(0xffffff, 2);
-    scoreboardLight.position.set(SCOREBOARD_POS_X, SCOREBOARD_POS_Y - 3, SCOREBOARD_POS_Z - 5);
+    scoreboardLight.position.set(SCOREBOARD_POS_X, SCOREBOARD_POS_Y - 10, SCOREBOARD_POS_Z - 20);
     scoreboardLight.target = scoreboardBase;
-    scoreboardLight.angle = 1.5;
-    scoreboardLight.distance = 14;
+    scoreboardLight.angle = 0.6;
+    scoreboardLight.distance = 28;
     scoreboardLight.castShadow = true;
     scoreboardLight.shadow.camera.near = 0.1;
     scoreboardLight.shadow.camera.far = scoreboardLight.distance;
+    scoreboardLight.shadow.mapSize.width = 1024;
+    scoreboardLight.shadow.mapSize.height = 1024;
+
     scoreboardLight.target.updateMatrixWorld();
     scene.add(scoreboardLight);
 
@@ -233,26 +286,25 @@ function createLights() {
 function loadSounds() {
     //sound_applause1 = new Audio();
     //sound_applause2 = new Audio();
-    one = new Audio("sounds/1.mp3");
-    one_u_5 = new Audio("sounds/1_pitchup_5.mp3");
-    one_u_10 = new Audio("sounds/1_pitchup_10.mp3");
-    one_d_5 = new Audio("sounds/1_pitchdown_5.mp3");
-    one_d_10 = new Audio("sounds/1_pitchdown_10.mp3");
-    two = new Audio("sounds/2.mp3");
-    three = new Audio("sounds/3.mp3");
-    four = new Audio("sounds/4.mp3");
-    five = new Audio("sounds/5.mp3")
-    sound_hits = [one, one_u_5, one_u_10, one_d_5, one_d_10, two, three, four, five];
+    var one = new Audio("sounds/1.mp3");
+    var one_u_5 = new Audio("sounds/1_pitchup_5.mp3");
+    var one_u_10 = new Audio("sounds/1_pitchup_10.mp3");
+    var one_d_5 = new Audio("sounds/1_pitchdown_5.mp3");
+    var one_d_10 = new Audio("sounds/1_pitchdown_10.mp3");
+    var three = new Audio("sounds/3.mp3");
+    var five = new Audio("sounds/5.mp3")
+    sounds_hits = [one, one_u_5, one_u_10, one_d_5, one_d_10, three, five];
 
-    cheer = new Audio("sounds/cheer.mp3");
-    cheer2 = new Audio("sounds/cheer2.mp3");
-    ohno = new Audio("sounds/ohno.mp3");
+    var cheer = new Audio("sounds/cheer.mp3");
+    var cheer2 = new Audio("sounds/cheer2.mp3");
+    var ohno = new Audio("sounds/ohno.mp3");
     sounds_cheers = [cheer, cheer2];
 
-    sound_targets_start = new Audio("sounds/targets_start.mp3");
+    var sound_targets_start = new Audio("sounds/targets_start.mp3");
     sound_targets_start.volume = 0.4;
-    sound_targets_loop = new Audio("sounds/targets_loop.mp3");
-    sound_targets_loop.volume = 0.4;
+    var sound_targets_loop = new Audio("sounds/targets_loop.mp3");
+    sound_targets_loop.volume = 1;
+    sound_targets_loop.onend = sound_targets_loop.play;
     sound_targets_loop.loop = true;
     sound_targets_start.play();
     sound_targets_start.onended = sound_targets_loop.play;
