@@ -15,8 +15,12 @@ function updateConfig() {
     computerPaddle.material.color.set(cssStringToColor(config.computerColor));
     sound_targets_start.volume = config.musicVolume;
     sound_targets_loop.volume = config.musicVolume;
-    sounds_cheers.forEach(function(audio) {audio.volume = config.soundVolume});
-    sounds_hits.forEach(function(audio) {audio.volume = config.soundVolume});
+    sounds_cheers.forEach(function (audio) {
+        audio.volume = config.soundVolume
+    });
+    sounds_hits.forEach(function (audio) {
+        audio.volume = config.soundVolume
+    });
     paddlePlayerMoveSpeed = PADDLE_PLAYER_BASELINE_MOVESPEED * config.playerSpeed;
     paddleComputerMoveSpeed = PADDLE_COMPUTER_BASELINE_MOVESPEED * config.computerSpeed;
 }
@@ -29,40 +33,43 @@ function initBall() {
     stillCollidingWithPlayer = false;
     stillCollidingWithWall = false;
 }
+
 initBall();
 
 function moveBallAndPaddles() {
     var cameraShaking = false;
+
     function moveBall() {
         var vec = new THREE.Vector3(dx, dy, 0);
         var dist = vec.length();
-        if(dist > BALL_SPEED_LIMIT) { // cap speed
+        if (dist > BALL_SPEED_LIMIT) { // cap speed
             vec.normalize().multiplyScalar(BALL_SPEED_LIMIT);
             dx = vec.x;
             dy = vec.y;
             dist = BALL_SPEED_LIMIT;
         }
-        var angle = dist/BALL_RADIUS;
+        var angle = dist / BALL_RADIUS;
         ball.position.add(vec);
         vec2 = new THREE.Vector3(-dy, dx, 0).normalize(); // axis of rotaiton
         var rotation = new THREE.Matrix4();
         rotation.makeRotationAxis(vec2, angle);
         ballInner.applyMatrix(rotation);
 
-        var shakeFactor = (dist - SHAKE_SPEED_MIN)/(SHAKE_SPEED_MAX - SHAKE_SPEED_MIN);
+        var shakeFactor = (dist - SHAKE_SPEED_MIN) / (SHAKE_SPEED_MAX - SHAKE_SPEED_MIN);
 
-        if(shakeFactor > 0) {
+        if (shakeFactor > 0) {
             cameraShaking = true;
 
-            var bgColor = Math.floor(0x77*Math.sqrt(Math.min(shakeFactor, 1))) * 0x10000; // math.sqrt provides a color curve
+            var bgColor = Math.floor(0x77 * Math.sqrt(Math.min(shakeFactor, 1))) * 0x10000; // math.sqrt provides a color curve
             renderer.setClearColor(bgColor, 1);
 
-            var shakeX = (Math.random()*2-1)*SHAKE_MAX_X*shakeFactor; // [-SHAKE_MAX, SHAKE_MAX)
-            var shakeY = (Math.random()*2-1)*SHAKE_MAX_Y*shakeFactor;
-            var shakeZ = (Math.random()*2-1)*SHAKE_MAX_Z*shakeFactor;
+            var shakeX = (Math.random() * 2 - 1) * SHAKE_MAX_X * shakeFactor; // [-SHAKE_MAX, SHAKE_MAX)
+            var shakeY = (Math.random() * 2 - 1) * SHAKE_MAX_Y * shakeFactor;
+            var shakeZ = (Math.random() * 2 - 1) * SHAKE_MAX_Z * shakeFactor;
             cameraParent.position.set(shakeX, shakeY, shakeZ);
         }
     }
+
     var disableSpeedDisplay = false;
     if (pause > 0) {
         if (server === 0) {
@@ -122,12 +129,33 @@ function moveBallAndPaddles() {
     if (newPlayerY > -PLAYFIELD_HEIGHT / 2 + PADDLE_HEIGHT / 2 && newPlayerY < -PADDLE_HEIGHT / 2 - CENTERLINE_WIDTH / 2) {
         playerPaddle.position.y = newPlayerY;
     }
-    if (Key.isDown(Key.Q)) {
-        playerPaddle.rotateZ(Math.PI / 32);
+
+    if (Key.oneDown([Key.Q, Key.RIGHTARROW, Key.UPARROW, Key.LEFTARROW, Key.E])) {
+        console.log(playerPaddle.rotation.z % Math.PI);
+        if (Key.oneDown([Key.Q, Key.LEFTARROW, Key.RIGHTARROW, Key.E])) {
+            if (Key.isDown(Key.Q) || Key.isDown(Key.LEFTARROW)) {
+                playerPaddle.rotateZ(Math.PI / 48);
+            }
+            if (Key.isDown(Key.E) || Key.isDown(Key.RIGHTARROW)) {
+                playerPaddle.rotateZ(-Math.PI / 48);
+            }
+        } else {
+            if (Key.isDown(Key.UPARROW)) {
+                if (!((Math.abs((playerPaddle.rotation.z - Math.PI) % Math.PI) < 0.02) ||
+                        (Math.abs((playerPaddle.rotation.z + Math.PI) % Math.PI) < 0.02))) {
+                    if ((playerPaddle.rotation.z > 0 && playerPaddle.rotation.z < Math.PI / 2) ||
+                        (playerPaddle.rotation.z < (-Math.PI / 2) && playerPaddle.rotation.z > (-Math.PI))) {
+                        playerPaddle.rotateZ(-Math.PI / 48);
+                    }
+                    else if ((playerPaddle.rotation.z > (Math.PI / 2) && playerPaddle.rotation.z < Math.PI) ||
+                        (playerPaddle.rotation.z < 0 && playerPaddle.rotation.z > (-Math.PI / 2)))
+                        playerPaddle.rotateZ(+Math.PI / 48);
+                }
+            }
+        }
     }
-    if (Key.isDown(Key.E)) {
-        playerPaddle.rotateZ(-Math.PI / 32);
-    }
+
+
     if (gp) {
         var x = gp.axes[2];
         var y = -gp.axes[3];
@@ -138,7 +166,7 @@ function moveBallAndPaddles() {
         }
     }
 
-    // move computer paddle
+// move computer paddle
     if (ball.position.x > computerPaddle.position.x) {
         if (computerPaddle.position.x < PLAYFIELD_WIDTH / 2 - PADDLE_WIDTH / 2) {
             computerPaddle.position.x += paddleComputerMoveSpeed;
@@ -153,10 +181,10 @@ function moveBallAndPaddles() {
         }
     }
 
-    // wall bounce
+// wall bounce
     if (ball.position.x < -(PLAYFIELD_WIDTH / 2) + BALL_RADIUS ||
         ball.position.x > (PLAYFIELD_WIDTH / 2) - BALL_RADIUS) {
-        if(!stillCollidingWithWall || Math.sign(dx) === Math.sign(ball.position.x)) {
+        if (!stillCollidingWithWall || Math.sign(dx) === Math.sign(ball.position.x)) {
             dx = -dx;
             moveBall();
             playRandomSound(sounds_hits);

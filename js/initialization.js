@@ -19,6 +19,7 @@ function init() {
     scene.add(cameraParent);
 
     controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableKeys = false;
     //controls.addEventListener('change', render);
 
     createGUI();
