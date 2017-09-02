@@ -21,6 +21,8 @@ function init() {
     new THREE.OrbitControls(camera, renderer.domElement);
     //controls.addEventListener('change', render);
 
+    createGUI();
+
     createPlayField();
 
     createWalls();
@@ -42,6 +44,23 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     render();
+}
+
+function createGUI() {
+
+    gui = new dat.gui.GUI();
+
+    colorFolder = gui.addFolder('Colors');
+    colorFolder.addColor(config, 'playerColor');
+    colorFolder.addColor(config, 'computerColor');
+    colorFolder.open();
+
+    difficultyFolder = gui.addFolder('Difficulty');
+    difficultyFolder.add(config, 'playerSpeed', 0, 1);
+    difficultyFolder.add(config, 'computerSpeed', 0, 1);
+    difficultyFolder.open();
+    gui.add(config, 'musicVolume', 0, 1);
+    gui.add(config, 'swooce');
 }
 
 function onResize() {
@@ -539,8 +558,8 @@ function loadSounds() {
     var ohno = new Audio("sounds/ohno.mp3");
     sounds_cheers = [cheer, cheer2];
 
-    var sound_targets_start = new Audio("sounds/targets_start.mp3");
-    var sound_targets_loop = new Audio("sounds/targets_loop.mp3");
+    sound_targets_start = new Audio("sounds/targets_start.mp3");
+    sound_targets_loop = new Audio("sounds/targets_loop.mp3");
     sound_targets_loop.loop = true;
     sound_targets_start.onended = function() {
         sound_targets_loop.currentTime = 0;

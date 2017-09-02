@@ -1,9 +1,18 @@
 function render() {
     moveBallAndPaddles();
 
+    updateConfig();
+
     requestAnimationFrame(render);
 
     renderer.render(scene, camera);
+}
+
+function updateConfig() {
+    playerPaddle.material.color.set(cssStringToColor(config.playerColor));
+    computerPaddle.material.color.set(cssStringToColor(config.computerColor));
+    sound_targets_start.volume = config.musicVolume;
+    sound_targets_loop.volume = config.musicVolume;
 }
 
 var dx = INIT_DX;
