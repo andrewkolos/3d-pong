@@ -13,6 +13,17 @@ var server = 2;
 var stillCollidingWithPlayer = false;
 
 function moveBallAndPaddles() {
+    function moveBall(x, y) {
+        var vec = new THREE.Vector3(x, y, 0);
+        var dist = vec.length();
+        var angle = dist/BALL_RADIUS;
+        ball.position.add(vec);
+        vec2 = new THREE.Vector3(-y, x, 0).normalize();
+        var rotation = new THREE.Matrix4();
+        rotation.makeRotationAxis(vec2, angle);
+        ballInner.applyMatrix(rotation);
+    }
+    var disableSpeedDisplay = false;
     if (pause > 0) {
         if (server === 0) {
             ball.position.x = playerPaddle.position.x + (PADDLE_HEIGHT / 2 + BALL_RADIUS * 2) * Math.cos(playerPaddle.rotation.z + Math.PI / 2);
@@ -22,6 +33,8 @@ function moveBallAndPaddles() {
             ball.position.y = computerPaddle.position.y - 2 * PADDLE_HEIGHT;
         }
         pause--;
+        disableSpeedDisplay = true;
+        updateBallProgress((NUM_FRAMES_PAUSE_AFTER_SCORE - pause) / NUM_FRAMES_PAUSE_AFTER_SCORE * 100, false);
     } else {
         if (pause === 0) {
             if (server === 0) {
@@ -33,8 +46,8 @@ function moveBallAndPaddles() {
             }
             pause--;
         }
-        ball.position.x += dx;
-        ball.position.y += dy;
+        moveBall(dx, dy);
+        updateBallProgress(0, true);
     }
 
     var playerPaddleSpeed = new THREE.Vector2(0, 0);
@@ -105,8 +118,7 @@ function moveBallAndPaddles() {
         ball.position.x > (PLAYFIELD_WIDTH / 2) - BALL_RADIUS) {
         dx = -dx;
 
-        ball.position.x += dx;
-        ball.position.y += dy;
+        moveBall(dx, dy);
 
         playRandomSound(sounds_hits);
     }
@@ -139,8 +151,7 @@ function moveBallAndPaddles() {
             dy = d.y;
             playRandomSound(sounds_hits);
 
-            ball.position.x += dx;
-            ball.position.y += dy;
+            moveBall(dx, dy);
 
             stillCollidingWithPlayer = true;
         }
@@ -148,7 +159,7 @@ function moveBallAndPaddles() {
         stillCollidingWithPlayer = false;
     }
 
-    updateBallSpeed(Math.hypot(dx, dy), false);
+    updateBallSpeed(Math.hypot(dx, dy), disableSpeedDisplay);
 
     /*var playerHitbox = new THREE.Box3().setFromObject(playerPaddle);
     var diff = playerPaddle.position.y - ball.position.y + PADDLE_HEIGHT;
@@ -166,6 +177,9 @@ function moveBallAndPaddles() {
         pause = NUM_FRAMES_PAUSE_AFTER_SCORE;
         server = 1;
         playRandomSound(sounds_cheers);
+
+        playerScore += 1;
+        playerScoreDisplay.setNumber(playerScore);
     }
 
     if (ball.position.y < -(PLAYFIELD_HEIGHT / 2) - ballHeight) { // computer score
@@ -175,6 +189,9 @@ function moveBallAndPaddles() {
         pause = NUM_FRAMES_PAUSE_AFTER_SCORE;
         server = 0;
         playRandomSound(sounds_cheers);
+
+        computerScore += 1;
+        computerScoreDisplay.setNumber(computerScore);
     }
 }
 

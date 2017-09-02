@@ -119,7 +119,7 @@ function createScoreBoard() {
     var loader = new THREE.FontLoader();
 
     loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
-        var playerTextGeometry = new THREE.TextGeometry("Player", {
+        var playerTextGeometry = new THREE.TextGeometry("P1", {
             font: font,
             size: 1,
             height: 0,
@@ -136,12 +136,12 @@ function createScoreBoard() {
         playerScoreMesh.receiveShadow = true;
         playerScoreMesh.castShadow = true;
 
-        playerScoreMesh.position.set(SCOREBOARD_POS_X - SCOREBOARD_WIDTH / 2 + 1,
-                            SCOREBOARD_POS_Y - 0.25,
-                            SCOREBOARD_POS_Z + 0.80);
+        playerScoreMesh.position.set(SCOREBOARD_POS_X - BALL_SPEED_METER_WIDTH / 2,
+            SCOREBOARD_POS_Y - 0.25,
+            SCOREBOARD_POS_Z + 0.80);
         scene.add(playerScoreMesh);
 
-        var computerTextGeometry = new THREE.TextGeometry("CPU", {
+        var computerTextGeometry = new THREE.TextGeometry("P2", {
             font: font,
             size: 1,
             height: 0,
@@ -158,12 +158,15 @@ function createScoreBoard() {
         computerScoreMesh.receiveShadow = true;
         computerScoreMesh.castShadow = true;
 
-        computerScoreMesh.position.set(SCOREBOARD_POS_X + 0.5,
+        var computerScoreBounds = new THREE.Box3();
+        computerScoreBounds.setFromObject(computerScoreMesh);
+
+        computerScoreMesh.position.set(SCOREBOARD_POS_X + SCOREBOARD_PADDING/2,
             SCOREBOARD_POS_Y - 0.25,
             SCOREBOARD_POS_Z + 0.80);
         scene.add(computerScoreMesh);
 
-        var ballSpeedGeometry = new THREE.TextGeometry("Ball Speed", {
+        /*var ballSpeedGeometry = new THREE.TextGeometry("Ball Speed", {
             font: font,
             size: 0.8,
             height: 0,
@@ -175,64 +178,295 @@ function createScoreBoard() {
         });
         var ballSpeedMaterial = new THREE.MeshPhongMaterial({color: 0x673AB7});
         ballSpeedMesh = new THREE.Mesh(ballSpeedGeometry, ballSpeedMaterial);
-        ballSpeedMesh.position.set(SCOREBOARD_POS_X- SCOREBOARD_WIDTH / 2 + 1, SCOREBOARD_POS_Y - 0.25, SCOREBOARD_POS_Z - SCOREBOARD_DEPTH /4);
+        ballSpeedMesh.position.set(SCOREBOARD_POS_X - SCOREBOARD_WIDTH / 2 + 1, SCOREBOARD_POS_Y - 0.25, SCOREBOARD_POS_Z - SCOREBOARD_DEPTH / 4);
         ballSpeedMesh.rotation.x = 90 * Math.PI / 180;
         ballSpeedMesh.castShadow = true;
         ballSpeedMesh.receiveShadow = true;
-        scene.add(ballSpeedMesh);
+        scene.add(ballSpeedMesh);*/
 
         function createPlane(x, y, z, width, height, color) {
             var geometry = new THREE.PlaneGeometry(width, height, 12, 12);
             var material = new THREE.MeshBasicMaterial({color: color});
             var mesh = new THREE.Mesh(geometry, material);
-            mesh.position.set(x, y, z)
+            mesh.position.set(x, y, z);
             mesh.rotation.x = Math.PI / 2;
-            scene.add(mesh);
             return mesh;
         }
 
+        var ballSpeedMeter = createPlane(BALL_SPEED_METER_POS_X, BALL_SPEED_METER_POS_Y + 0.01, BALL_SPEED_METER_POS_Z, BALL_SPEED_METER_WIDTH, BALL_SPEED_METER_HEIGHT, BALL_SPEED_METER_COLOR);
+        scene.add(ballSpeedMeter);
         var partCount = BALL_SPEED_METER_PART_COLORS.length;
         var sepSize = BALL_SPEED_METER_SEPARATOR_SIZE;
-        var ballSpeedMeter = createPlane(BALL_SPEED_METER_POS_X, BALL_SPEED_METER_POS_Y, BALL_SPEED_METER_POS_Z, BALL_SPEED_METER_WIDTH, BALL_SPEED_METER_HEIGHT, BALL_SPEED_METER_COLOR);
-        var meterPartWidth = (BALL_SPEED_METER_WIDTH - sepSize) / partCount - sepSize;
+        function createProgressParts(partColors, sepSize, width, height, minValue, maxValue, allowNoMin) {
+            var meterPartWidth = (width - sepSize) / partColors.length - sepSize;
 
-        var currentX = BALL_SPEED_METER_POS_X - BALL_SPEED_METER_WIDTH / 2 + sepSize + meterPartWidth / 2;
-        var meterParts = [];
-        for (var i = 0; i < partCount; i++) {
-            var part = createPlane(currentX, BALL_SPEED_METER_POS_Y - 0.01, BALL_SPEED_METER_POS_Z, meterPartWidth, BALL_SPEED_METER_HEIGHT - sepSize * 2, BALL_SPEED_METER_PART_COLORS[i]);
-            meterParts.push(part);
-            part.visible = false;
+            var currentX = -width / 2 + sepSize + meterPartWidth / 2;
+            var meterObject = new THREE.Object3D();
+            var meterParts = [];
+            for (var i = 0; i < partColors.length; i++) {
+                var part = createPlane(currentX, 0, 0, meterPartWidth, height - sepSize * 2, partColors[i]);
+                meterParts.push(part);
+                meterObject.add(part);
+                part.visible = false;
 
-            currentX += meterPartWidth + sepSize;
+                currentX += meterPartWidth + sepSize;
+            }
+
+            return {
+                object: meterObject,
+                update: function (value, disable) {
+                    if (disable) {
+                        for (var i = 0; i < meterParts.length; i++) {
+                            meterParts[i].visible = false;
+                        }
+                    } else {
+                        var partRange = (maxValue - minValue) / meterParts.length;
+                        var currentMin = minValue;
+                        for (var i = 0; i < meterParts.length; i++) {
+                            if (allowNoMin || i > 0)
+                                meterParts[i].visible = value > currentMin;
+                            else
+                                meterParts[i].visible = true;
+                            currentMin += partRange;
+                        }
+                    }
+                }
+            };
         }
 
-        updateBallSpeed = function(ballSpeed, disableBallSpeed) {
-            if (disableBallSpeed) {
-               for (var i = 0; i < meterParts.length; i++) {
-                   meterParts[i].visible = false;
-               }
-            } else {
-                var speedPart = (BALL_SPEED_METER_MAX_SPEED - BALL_SPEED_METER_MIN_SPEED) / meterParts.length;
-                var currentSpeed = BALL_SPEED_METER_MIN_SPEED + speedPart;
-                meterParts[0].visible = true;
-                for (var i = 1; i < meterParts.length; i++) {
-                    meterParts[i].visible = ballSpeed > currentSpeed;
-                    currentSpeed += speedPart;
-                }
-            }
-        };
+        var speedMeter = createProgressParts(
+            BALL_SPEED_METER_PART_COLORS,
+            BALL_SPEED_METER_SEPARATOR_SIZE,
+            BALL_SPEED_METER_WIDTH,
+            BALL_SPEED_METER_HEIGHT,
+            BALL_SPEED_METER_MIN_SPEED,
+            BALL_SPEED_METER_MAX_SPEED,
+            false);
+        speedMeter.object.position.set(BALL_SPEED_METER_POS_X, BALL_SPEED_METER_POS_Y, BALL_SPEED_METER_POS_Z);
+        scene.add(speedMeter.object);
+        updateBallSpeed = speedMeter.update;
 
-        console.log("hi");
+        var progressMeter = createProgressParts(
+            BALL_PROGRESS_METER_PART_COLORS,
+            BALL_SPEED_METER_SEPARATOR_SIZE,
+            BALL_SPEED_METER_WIDTH,
+            BALL_SPEED_METER_HEIGHT,
+            0, 100, true);
+        progressMeter.object.position.set(BALL_SPEED_METER_POS_X, BALL_SPEED_METER_POS_Y, BALL_SPEED_METER_POS_Z);
+        scene.add(progressMeter.object);
+        updateBallProgress = progressMeter.update;
+
+        var segmentHeight = 0.75;
+        var segmentWidth = 1.5;
+        var segmentPad = 0.10;
+        // 7 segment displays
+        function createSegment(segmentMaterial) {
+            var segmentGeometry = new THREE.Geometry();
+            var segWidthPad = segmentWidth - segmentPad;
+            var segHeightPad = segmentHeight - segmentPad;
+            segmentGeometry.vertices.push( // vertices in clockwise order
+                new THREE.Vector3(-segWidthPad / 2, segHeightPad / 2, 0), // top left
+                new THREE.Vector3(segWidthPad / 2, segHeightPad / 2, 0), // top right
+                new THREE.Vector3(segWidthPad / 2 + segHeightPad / 2, 0, 0), // triangle point right
+                new THREE.Vector3(segWidthPad / 2, -segHeightPad / 2, 0), // bottom right
+                new THREE.Vector3(-segWidthPad / 2, -segHeightPad / 2, 0), // bottom left
+                new THREE.Vector3(-segWidthPad / 2 - segHeightPad / 2, 0, 0) // triangle point left
+            );
+            segmentGeometry.faces.push(
+                new THREE.Face3(0, 1, 3),
+                new THREE.Face3(3, 4, 0),
+                new THREE.Face3(1, 2, 3),
+                new THREE.Face3(4, 5, 0)
+            );
+            segmentGeometry.computeFaceNormals();
+            segmentGeometry.computeVertexNormals();
+
+            segmentMaterial.side = THREE.DoubleSide;
+            var segmentMesh = new THREE.Mesh(segmentGeometry, segmentMaterial);
+            segmentMesh.receiveShadow = true;
+            //segmentMesh.castShadow = true;
+
+            return segmentMesh;
+        }
+
+        function createDigit(segmentMaterial) {
+            var obj = new THREE.Object3D();
+            var segs = [];
+            for (var i = 0; i < 7; i++) {
+                segs.push(createSegment(segmentMaterial));
+                obj.add(segs[i]);
+            }
+            const halfSeg = segmentHeight/2 + segmentWidth /2;
+            segs[1].position.set(-halfSeg, halfSeg, 0);
+            segs[1].rotation.z = Math.PI / 2 ;
+            segs[2].position.set(0, halfSeg * 2, 0);
+            segs[3].position.set(halfSeg, halfSeg, 0);
+            segs[3].rotation.z = Math.PI / 2;
+            segs[4].position.set(halfSeg, -halfSeg, 0);
+            segs[4].rotation.z = Math.PI / 2;
+            segs[5].position.set(0, - halfSeg * 2, 0);
+            segs[6].position.set(-halfSeg, -halfSeg, 0);
+            segs[6].rotation.z = Math.PI/2;
+
+            var numStates = [
+                [false, true, true, true, true, true, true],
+                [false, false, false, true, true, false, false],
+                [true, false, true, true, false, true, true],
+                [true, false, true, true, true, true, false],
+                [true, true, false, true, true, false, false],
+                [true, true, true, false, true, true, false],
+                [true, true, true, false, true, true, true],
+                [false, false, true, true, true, false, false],
+                [true, true, true, true, true, true, true],
+                [true, true, true, true, true, true, false]
+            ];
+
+            return {
+                object: obj,
+                setNumber: function(n) {
+                    for (var i = 0; i < 7; i++) {
+                        segs[i].visible = numStates[n][i];
+                    }
+                },
+                invert: function() {
+                    for (var i = 0; i < 7; i++) {
+                        segs[i].visible = !segs[i].visible;
+                    }
+                },
+                clear: function() {
+                    for (var i = 0; i < 7; i++) {
+                        segs[i].visible = false;
+                    }
+                }
+            };
+        }
+
+        function createFullDigit() {
+            var front = createDigit(new THREE.MeshBasicMaterial({color: 0xff0000}));
+            var back = createDigit(new THREE.MeshLambertMaterial({color: 0x222222}));
+            var obj = new THREE.Object3D();
+            obj.add(front.object);
+            obj.add(back.object);
+
+            return {
+                object: obj,
+                setNumber: function(n) {
+                    front.setNumber(n);
+                    back.setNumber(n);
+                    back.invert();
+                },
+                invert: function() {
+                    front.invert();
+                    back.invert();
+                },
+                clear: function() {
+                    front.clear();
+                    back.clear();
+                    back.invert();
+                }
+            };
+        }
+
+        function createDisplay(numDigits) {
+            var obj = new THREE.Object3D();
+            var digitHeight = segmentHeight*3 + segmentWidth*2;
+            var digitWidth = segmentWidth + segmentHeight*2;
+            var fullHeight = digitHeight + segmentHeight * 2;
+            var fullWidth = segmentHeight + numDigits * (digitWidth + segmentHeight);
+            var currentX = -fullWidth / 2 + segmentHeight + digitWidth / 2;
+            var digits = [];
+            for (var i = 0; i < numDigits; i++) {
+                digits.push(createFullDigit());
+                obj.add(digits[i].object);
+                digits[i].object.position.set(currentX, 0, 0);
+                currentX += digitWidth + segmentHeight;
+            }
+
+            var backGeometry = new THREE.PlaneGeometry(fullWidth, fullHeight, 1, 1);
+            var backMaterial = new THREE.MeshLambertMaterial({color: BALL_SPEED_METER_COLOR});
+            var backMesh = new THREE.Mesh(backGeometry, backMaterial);
+            backMesh.position.z = -0.01;
+            obj.add(backMesh);
+
+            var bounds = new THREE.Box3();
+            bounds.setFromObject(obj);
+            var displayHeight = bounds.max.y - bounds.min.y;
+            obj.scale.x = 1/displayHeight;
+            obj.scale.y = 1/displayHeight;
+
+            return {
+                object: obj,
+                setNumber: function(n) {
+                    var i = numDigits-1;
+                    do {
+                        digits[i--].setNumber(n%10);
+                        n = (n - (n%10)) / 10;
+                    } while(n > 0 && i >= 0);
+                    while(i >= 0) {
+                        digits[i--].clear();
+                    }
+                },
+                invert: function() {
+                    for (var i = 0; i < numDigits; i++) {
+                        digits[i].invert();
+                    }
+                },
+                clear: function() {
+                    for (var i = 0; i < numDigits; i++) {
+                        digits[i].clear();
+                    }
+                }
+            };
+        }
+
+        {
+            playerScoreDisplay = createDisplay(2);
+            var obj = playerScoreDisplay.object;
+            obj.scale.x *= BALL_SPEED_METER_HEIGHT;
+            obj.scale.y *= BALL_SPEED_METER_HEIGHT;
+
+            var scoreBounds = new THREE.Box3();
+            scoreBounds.setFromObject(obj);
+
+            obj.position.set(SCOREBOARD_POS_X - (scoreBounds.max.x - scoreBounds.min.x)/2 - SCOREBOARD_PADDING/2, SCOREBOARD_POS_Y - 1, SCOREBOARD_POS_Z + 1.3);
+            obj.rotation.x = Math.PI / 2;
+            scene.add(obj);
+
+            playerScoreDisplay.setNumber(0);
+        }
+
+        {
+            computerScoreDisplay = createDisplay(2);
+            var obj = computerScoreDisplay.object;
+            obj.scale.x *= BALL_SPEED_METER_HEIGHT;
+            obj.scale.y *= BALL_SPEED_METER_HEIGHT;
+
+            var scoreBounds = new THREE.Box3();
+            scoreBounds.setFromObject(obj);
+
+            obj.position.set(SCOREBOARD_POS_X + BALL_SPEED_METER_WIDTH/2 - (scoreBounds.max.x - scoreBounds.min.x)/2 , SCOREBOARD_POS_Y - 1, SCOREBOARD_POS_Z + 1.3);
+            obj.rotation.x = Math.PI / 2;
+            scene.add(obj);
+
+            computerScoreDisplay.setNumber(0);
+        }
     });
 }
 
 function createBall() {
     var geomtry = new THREE.SphereGeometry(BALL_RADIUS, BALL_NUM_SEGMENTS, BALL_NUM_SEGMENTS);
-    var material = new THREE.MeshLambertMaterial({color: BALL_COLOR});
-    ball = new THREE.Mesh(geomtry, material);
+    var material = new THREE.MeshPhongMaterial();//MeshLambertMaterial({color: BALL_COLOR});
+    //material.map = THREE.ImageUtils.loadTexture('img/earthmap1k.jpg');
+    //material.bumpMap = THREE.ImageUtils.loadTexture('img/earthbump1k.jpg');
+    //material.bumpScale = 0.5;
+    material.map = THREE.ImageUtils.loadTexture('img/soccer1.jpg');
+    ballInner = new THREE.Mesh(geomtry, material);
+    ballInner.receiveShadow = true;
+    ballInner.castShadow = true;
+
+    ball = new THREE.Group();
     ball.position.set(0, 0, BALL_RADIUS);
-    ball.receiveShadow = true;
-    ball.castShadow = true;
+    ball.add(ballInner);
 
     scene.add(ball);
 }
@@ -248,10 +482,10 @@ function createLights() {
     dirLight1.shadow.camera.far = camera.far;
     dirLight1.shadow.camera.left = -7;
     dirLight1.shadow.camera.right = 7;
-    dirLight1.shadow.camera.top = 13;
-    dirLight1.shadow.camera.bottom = -13;
-    dirLight1.shadow.mapSize.width = 1024;
-    dirLight1.shadow.mapSize.height = 1024;
+    dirLight1.shadow.camera.top = 12;
+    dirLight1.shadow.camera.bottom = -12;
+    dirLight1.shadow.mapSize.width = 2048;
+    dirLight1.shadow.mapSize.height = 2048;
     scene.add(dirLight1);
 
     scoreboardLight = new THREE.SpotLight(0xffffff, 2);
@@ -298,7 +532,7 @@ function loadSounds() {
     var one_d_5 = new Audio("sounds/1_pitchdown_5.mp3");
     var one_d_10 = new Audio("sounds/1_pitchdown_10.mp3");
     var three = new Audio("sounds/3.mp3");
-    var five = new Audio("sounds/5.mp3")
+    var five = new Audio("sounds/5.mp3");
     sounds_hits = [one, one_u_5, one_u_10, one_d_5, one_d_10, three, five];
 
     var cheer = new Audio("sounds/cheer.mp3");
@@ -307,12 +541,12 @@ function loadSounds() {
     sounds_cheers = [cheer, cheer2];
 
     var sound_targets_start = new Audio("sounds/targets_start.mp3");
-    sound_targets_start.volume = 0.4;
     var sound_targets_loop = new Audio("sounds/targets_loop.mp3");
-    sound_targets_loop.volume = 1;
-    sound_targets_loop.onend = sound_targets_loop.play;
     sound_targets_loop.loop = true;
+    sound_targets_start.onended = function() {
+        sound_targets_loop.currentTime = 0;
+        sound_targets_loop.play();
+    };
     sound_targets_start.play();
-    sound_targets_start.onended = sound_targets_loop.play;
 
 }

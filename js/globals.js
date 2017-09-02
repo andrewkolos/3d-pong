@@ -6,10 +6,13 @@ var camera;
 var playerPaddle;
 var computerPaddle;
 var ball;
+var ballInner;
 
 var scoreboardBase;
-var playerScore;
-var computerScore;
+var playerScore = 0;
+var playerScoreDisplay;
+var computerScore = 0;
+var computerScoreDisplay;
 
 var scoreboardLight;
 
@@ -24,3 +27,4 @@ var sounds_cheers;
 var gamepad;
 
 var updateBallSpeed = function(ballSpeed, disableSpeedMeter) {};
+var updateBallProgress = function(ballProgress, disableProgressMeter) {};
