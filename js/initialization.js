@@ -13,8 +13,10 @@ function init() {
     ///renderer.shadowMap.type = THREE.BasicShadowMap;//THREE.PCFSoftShadowMap;
     //renderer.shadowMap.renderReverseSided = false;
 
+    cameraParent = new THREE.Group();
+    cameraParent.add(camera);
 
-    scene.add(camera);
+    scene.add(cameraParent);
 
     new THREE.OrbitControls(camera, renderer.domElement);
     //controls.addEventListener('change', render);
@@ -455,10 +457,7 @@ function createScoreBoard() {
 
 function createBall() {
     var geomtry = new THREE.SphereGeometry(BALL_RADIUS, BALL_NUM_SEGMENTS, BALL_NUM_SEGMENTS);
-    var material = new THREE.MeshPhongMaterial();//MeshLambertMaterial({color: BALL_COLOR});
-    //material.map = THREE.ImageUtils.loadTexture('img/earthmap1k.jpg');
-    //material.bumpMap = THREE.ImageUtils.loadTexture('img/earthbump1k.jpg');
-    //material.bumpScale = 0.5;
+    var material = new THREE.MeshPhongMaterial();
     material.map = THREE.ImageUtils.loadTexture('img/soccer1.jpg');
     ballInner = new THREE.Mesh(geomtry, material);
     ballInner.receiveShadow = true;

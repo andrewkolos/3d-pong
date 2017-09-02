@@ -1,6 +1,7 @@
 var scene;
 var renderer;
 var camera;
+var cameraParent;
 
 
 var playerPaddle;

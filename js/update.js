@@ -11,17 +11,39 @@ var dy = INIT_DY;
 var pause = 0;
 var server = 2;
 var stillCollidingWithPlayer = false;
+var stillCollidingWithWall = false;
 
 function moveBallAndPaddles() {
-    function moveBall(x, y) {
-        var vec = new THREE.Vector3(x, y, 0);
+    var cameraShaking = false;
+    function moveBall() {
+        var vec = new THREE.Vector3(dx, dy, 0);
         var dist = vec.length();
+        if(dist > BALL_SPEED_LIMIT) {
+            vec.normalize().multiplyScalar(BALL_SPEED_LIMIT);
+            dx = vec.x;
+            dy = vec.y;
+            dist = BALL_SPEED_LIMIT;
+        }
         var angle = dist/BALL_RADIUS;
         ball.position.add(vec);
-        vec2 = new THREE.Vector3(-y, x, 0).normalize();
+        vec2 = new THREE.Vector3(-dy, dx, 0).normalize();
         var rotation = new THREE.Matrix4();
         rotation.makeRotationAxis(vec2, angle);
         ballInner.applyMatrix(rotation);
+
+        var shakeFactor = (dist - SHAKE_SPEED_MIN)/(SHAKE_SPEED_MAX - SHAKE_SPEED_MIN);
+
+        if(shakeFactor > 0) {
+            cameraShaking = true;
+
+            var bgColor = Math.floor(0x77*Math.sqrt(Math.min(shakeFactor, 1))) * 0x10000;
+            renderer.setClearColor(bgColor, 1);
+
+            var shakeX = (Math.random()*2-1)*SHAKE_MAX_X*shakeFactor;
+            var shakeY = (Math.random()*2-1)*SHAKE_MAX_Y*shakeFactor;
+            var shakeZ = (Math.random()*2-1)*SHAKE_MAX_Z*shakeFactor;
+            cameraParent.position.set(shakeX, shakeY, shakeZ);
+        }
     }
     var disableSpeedDisplay = false;
     if (pause > 0) {
@@ -46,7 +68,7 @@ function moveBallAndPaddles() {
             }
             pause--;
         }
-        moveBall(dx, dy);
+        moveBall();
         updateBallProgress(0, true);
     }
 
@@ -116,11 +138,15 @@ function moveBallAndPaddles() {
     // wall bounce
     if (ball.position.x < -(PLAYFIELD_WIDTH / 2) + BALL_RADIUS ||
         ball.position.x > (PLAYFIELD_WIDTH / 2) - BALL_RADIUS) {
-        dx = -dx;
+        if(!stillCollidingWithWall || Math.sign(dx) === Math.sign(ball.position.x)) {
+            dx = -dx;
+            moveBall();
+            playRandomSound(sounds_hits);
 
-        moveBall(dx, dy);
-
-        playRandomSound(sounds_hits);
+            stillCollidingWithWall = true;
+        } else {
+            stillCollidingWithWall = false;
+        }
     }
 
     var computerHitbox = new THREE.Box3().setFromObject(computerPaddle);
@@ -140,18 +166,18 @@ function moveBallAndPaddles() {
     if (Math.abs(newBallRelPos.x) - BALL_RADIUS < PADDLE_WIDTH / 2 && Math.abs(newBallRelPos.y) - BALL_RADIUS < PADDLE_HEIGHT / 2) {
         //dy += dy < 0 ? -BALL_SPEED_INCREASE_ON_PADDLE_HIT : BALL_SPEED_INCREASE_ON_PADDLE_HIT;
         //dy = -dy;
-        if (!stillCollidingWithPlayer) {
-            var d = new THREE.Vector2(dx, dy);
-            d.x -= playerPaddleSpeed.x * PLAYER_IMPACT_SPEEDUP;
-            d.y -= playerPaddleSpeed.y * PLAYER_IMPACT_SPEEDUP;
-            d.rotateAround(origin, -playerPaddle.rotation.z);
+        var d = new THREE.Vector2(dx, dy);
+        d.x -= playerPaddleSpeed.x * PLAYER_IMPACT_SPEEDUP;
+        d.y -= playerPaddleSpeed.y * PLAYER_IMPACT_SPEEDUP;
+        d.rotateAround(origin, -playerPaddle.rotation.z);
+        if (!stillCollidingWithPlayer || d.y < 0) {
             d.y = -d.y;
             d.rotateAround(origin, playerPaddle.rotation.z);
             dx = d.x;
             dy = d.y;
             playRandomSound(sounds_hits);
 
-            moveBall(dx, dy);
+            moveBall();
 
             stillCollidingWithPlayer = true;
         }
@@ -192,6 +218,11 @@ function moveBallAndPaddles() {
 
         computerScore += 1;
         computerScoreDisplay.setNumber(computerScore);
+    }
+
+    if (!cameraShaking) {
+        renderer.setClearColor(0, 1);
+        cameraParent.position.set(0, 0, 0);
     }
 }
 
