@@ -41,7 +41,6 @@
 
     // start listening for gamepad connection events
     PxGamepad.prototype.start = function() {
-
         this.reset();
 
         this.listeners = {
@@ -50,12 +49,19 @@
                 if (gamepad.mapping === 'standard') {
                     this.connectedGamepad = gamepad;
                 }
+                $('#gamepad-image').attr('src', 'img/connected_controller.png');
             }),
             'gamepaddisconnected': jQuery.proxy(function(e) {
                 var gamepad = e.originalEvent.gamepad;
                 if (this.connectedGamepad === gamepad) {
                     this.connectedGamepad = null;
                 }
+                $('#gamepad-image').attr('src', 'img/disconnected.png');
+                $('#gamepad-image').css('cursor', 'pointer');
+                $('#gamepad-image').click(function () {
+                    alert("No gamepad detected. If you have one plugged in, try pressing a button. Otherwise, try restarting your browser.\n\n"+
+                        "You can test your gamepad at http://html5gamepad.com/");
+                });
             })
         };
 
@@ -115,9 +121,9 @@
 
     // helper to retrieve the currently connected gamepad
     PxGamepad.prototype.getGamepad = function() {
-        
         // default to connected gamepad
         var gp = this.connectedGamepad;
+
         if (gp) {
             return gp;
         }

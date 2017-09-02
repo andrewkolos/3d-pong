@@ -1,5 +1,6 @@
 function render() {
     stats.begin();
+
     moveBallAndPaddles();
 
     updateConfig();
@@ -27,6 +28,17 @@ function updateConfig() {
     });
     paddlePlayerMoveSpeed = PADDLE_PLAYER_BASELINE_MOVESPEED * config.playerSpeed;
     paddleComputerMoveSpeed = PADDLE_COMPUTER_BASELINE_MOVESPEED * config.computerSpeed;
+
+    if (gamepad.getGamepad())
+        $('#gamepad-image').attr('src', 'img/connected_controller.png');
+    else {
+        $('#gamepad-image').attr('src', 'img/disconnected.png');
+        $('#gamepad-image').css('cursor', 'pointer');
+        $('#gamepad-image').click(function () {
+            alert("No gamepad detected. If you have one plugged in, try pressing a button. Otherwise, try restarting your browser.\n\n"+
+                "You can test your gamepad at http://html5gamepad.com/");
+        });
+    }
 }
 
 function initBall() {

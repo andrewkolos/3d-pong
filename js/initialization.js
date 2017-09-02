@@ -42,6 +42,16 @@ function init() {
 
     gamepad = new PxGamepad();
     gamepad.start();
+    if (gamepad.getGamepad())
+        $('#gamepad-image').attr('src', 'img/connected_controller.png');
+    else {
+        $('#gamepad-image').attr('src', 'img/disconnected.png');
+        $('#gamepad-image').css('cursor', 'pointer');
+        $('#gamepad-image').click(function () {
+            alert("No gamepad detected. If you have one plugged in, try pressing a button. Otherwise, try restarting your browser.\n\n"+
+                "You can test your gamepad at http://html5gamepad.com/");
+        });
+    }
 
     window.addEventListener('resize', onResize, false);
     document.body.appendChild(renderer.domElement);
@@ -74,7 +84,7 @@ function createGUI() {
 
 function loadStats() {
     stats = new Stats();
-    stats.dom.style.width = 200;
+    stats.dom.style.width = 80;
     stats.showPanel(0);
     document.body.appendChild(stats.dom);
 }
@@ -198,7 +208,7 @@ function createScoreBoard() {
         var computerScoreBounds = new THREE.Box3();
         computerScoreBounds.setFromObject(computerScoreMesh);
 
-        computerScoreMesh.position.set(SCOREBOARD_POS_X + SCOREBOARD_PADDING/2,
+        computerScoreMesh.position.set(SCOREBOARD_POS_X + SCOREBOARD_PADDING / 2,
             SCOREBOARD_POS_Y - 0.25,
             SCOREBOARD_POS_Z + 0.80);
         scene.add(computerScoreMesh);
@@ -216,6 +226,7 @@ function createScoreBoard() {
         scene.add(ballSpeedMeter);
         var partCount = BALL_SPEED_METER_PART_COLORS.length;
         var sepSize = BALL_SPEED_METER_SEPARATOR_SIZE;
+
         function createProgressParts(partColors, sepSize, width, height, minValue, maxValue, allowNoMin) {
             var meterPartWidth = (width - sepSize) / partColors.length - sepSize;
 
@@ -278,6 +289,7 @@ function createScoreBoard() {
         var segmentHeight = 0.75;
         var segmentWidth = 1.5;
         var segmentPad = 0.10;
+
         // 7 segment displays
         function createSegment(segmentMaterial) {
             var segmentGeometry = new THREE.Geometry();
@@ -315,17 +327,17 @@ function createScoreBoard() {
                 segs.push(createSegment(segmentMaterial));
                 obj.add(segs[i]);
             }
-            const halfSeg = segmentHeight/2 + segmentWidth /2;
+            const halfSeg = segmentHeight / 2 + segmentWidth / 2;
             segs[1].position.set(-halfSeg, halfSeg, 0);
-            segs[1].rotation.z = Math.PI / 2 ;
+            segs[1].rotation.z = Math.PI / 2;
             segs[2].position.set(0, halfSeg * 2, 0);
             segs[3].position.set(halfSeg, halfSeg, 0);
             segs[3].rotation.z = Math.PI / 2;
             segs[4].position.set(halfSeg, -halfSeg, 0);
             segs[4].rotation.z = Math.PI / 2;
-            segs[5].position.set(0, - halfSeg * 2, 0);
+            segs[5].position.set(0, -halfSeg * 2, 0);
             segs[6].position.set(-halfSeg, -halfSeg, 0);
-            segs[6].rotation.z = Math.PI/2;
+            segs[6].rotation.z = Math.PI / 2;
 
             var numStates = [
                 [false, true, true, true, true, true, true],
@@ -342,17 +354,17 @@ function createScoreBoard() {
 
             return {
                 object: obj,
-                setNumber: function(n) {
+                setNumber: function (n) {
                     for (var i = 0; i < 7; i++) {
                         segs[i].visible = numStates[n][i];
                     }
                 },
-                invert: function() {
+                invert: function () {
                     for (var i = 0; i < 7; i++) {
                         segs[i].visible = !segs[i].visible;
                     }
                 },
-                clear: function() {
+                clear: function () {
                     for (var i = 0; i < 7; i++) {
                         segs[i].visible = false;
                     }
@@ -369,16 +381,16 @@ function createScoreBoard() {
 
             return {
                 object: obj,
-                setNumber: function(n) {
+                setNumber: function (n) {
                     front.setNumber(n);
                     back.setNumber(n);
                     back.invert();
                 },
-                invert: function() {
+                invert: function () {
                     front.invert();
                     back.invert();
                 },
-                clear: function() {
+                clear: function () {
                     front.clear();
                     back.clear();
                     back.invert();
@@ -388,8 +400,8 @@ function createScoreBoard() {
 
         function createDisplay(numDigits) {
             var obj = new THREE.Object3D();
-            var digitHeight = segmentHeight*3 + segmentWidth*2;
-            var digitWidth = segmentWidth + segmentHeight*2;
+            var digitHeight = segmentHeight * 3 + segmentWidth * 2;
+            var digitWidth = segmentWidth + segmentHeight * 2;
             var fullHeight = digitHeight + segmentHeight * 2;
             var fullWidth = segmentHeight + numDigits * (digitWidth + segmentHeight);
             var currentX = -fullWidth / 2 + segmentHeight + digitWidth / 2;
@@ -410,27 +422,27 @@ function createScoreBoard() {
             var bounds = new THREE.Box3();
             bounds.setFromObject(obj);
             var displayHeight = bounds.max.y - bounds.min.y;
-            obj.scale.x = 1/displayHeight;
-            obj.scale.y = 1/displayHeight;
+            obj.scale.x = 1 / displayHeight;
+            obj.scale.y = 1 / displayHeight;
 
             return {
                 object: obj,
-                setNumber: function(n) {
-                    var i = numDigits-1;
+                setNumber: function (n) {
+                    var i = numDigits - 1;
                     do {
-                        digits[i--].setNumber(n%10);
-                        n = (n - (n%10)) / 10;
-                    } while(n > 0 && i >= 0);
-                    while(i >= 0) {
+                        digits[i--].setNumber(n % 10);
+                        n = (n - (n % 10)) / 10;
+                    } while (n > 0 && i >= 0);
+                    while (i >= 0) {
                         digits[i--].clear();
                     }
                 },
-                invert: function() {
+                invert: function () {
                     for (var i = 0; i < numDigits; i++) {
                         digits[i].invert();
                     }
                 },
-                clear: function() {
+                clear: function () {
                     for (var i = 0; i < numDigits; i++) {
                         digits[i].clear();
                     }
@@ -447,7 +459,7 @@ function createScoreBoard() {
             var scoreBounds = new THREE.Box3();
             scoreBounds.setFromObject(obj);
 
-            obj.position.set(SCOREBOARD_POS_X - (scoreBounds.max.x - scoreBounds.min.x)/2 - SCOREBOARD_PADDING/2, SCOREBOARD_POS_Y - 1, SCOREBOARD_POS_Z + 1.3);
+            obj.position.set(SCOREBOARD_POS_X - (scoreBounds.max.x - scoreBounds.min.x) / 2 - SCOREBOARD_PADDING / 2, SCOREBOARD_POS_Y - 1, SCOREBOARD_POS_Z + 1.3);
             obj.rotation.x = Math.PI / 2;
             scene.add(obj);
 
@@ -463,7 +475,7 @@ function createScoreBoard() {
             var scoreBounds = new THREE.Box3();
             scoreBounds.setFromObject(obj);
 
-            obj.position.set(SCOREBOARD_POS_X + BALL_SPEED_METER_WIDTH/2 - (scoreBounds.max.x - scoreBounds.min.x)/2 , SCOREBOARD_POS_Y - 1, SCOREBOARD_POS_Z + 1.3);
+            obj.position.set(SCOREBOARD_POS_X + BALL_SPEED_METER_WIDTH / 2 - (scoreBounds.max.x - scoreBounds.min.x) / 2, SCOREBOARD_POS_Y - 1, SCOREBOARD_POS_Z + 1.3);
             obj.rotation.x = Math.PI / 2;
             scene.add(obj);
 
@@ -559,7 +571,7 @@ function loadSounds() {
     sound_targets_start = new Audio("sounds/targets_start.mp3");
     sound_targets_loop = new Audio("sounds/targets_loop.mp3");
     sound_targets_loop.loop = true;
-    sound_targets_start.onended = function() {
+    sound_targets_start.onended = function () {
         sound_targets_loop.currentTime = 0;
         sound_targets_loop.play();
     };

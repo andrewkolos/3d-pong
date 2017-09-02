@@ -18,9 +18,32 @@
     <script src="js/initialization.js"></script>
     <script src="js/update.js"></script>
     <link rel="stylesheet" type="text/css" href="dat.gui.css" />
+
+    <style type="text/css">
+        .gamepad-info {
+            width: 48px;
+
+            height: 48px;
+
+            position: absolute;
+            padding: 0;
+            margin: 0;
+            top: 0px;
+            left: 80px;
+        }
+        .gamepad-info img {
+            max-height: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
 </head>
 
 <body onload="init()" style="margin: 0;">
+    <div class="gamepad-info">
+        <img id="gamepad-image" src="" />
+    </div>
 </body>
 
 </html>
