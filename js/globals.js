@@ -3,11 +3,20 @@ var renderer;
 var camera;
 var cameraParent;
 
+var controls;
+var stats;
 
 var playerPaddle;
 var computerPaddle;
 var ball;
 var ballInner;
+
+var dx;
+var dy;
+var pause;
+var server;
+var stillCollidingWithPlayer;
+var stillCollidingWithWall;
 
 var scoreboardBase;
 var playerScore = 0;
@@ -31,7 +40,7 @@ var gui;
 var colorFolder;
 var difficultyFolder;
 
-function parseColor  (color, toNumber) {
+function parseColor(color, toNumber) {
     if (toNumber === true) {
         if (typeof color === 'number') {
             return (color | 0); //chop off decimal
@@ -58,17 +67,35 @@ function cssStringToColor(color) {
 
 var config = {
     playerColor: parseColor(PADDLE_PLAYER_COLOR, false),
-    playerSpeed: PADDLE_PLAYER_MOVESPEED,
+    playerSpeed: PADDLE_PLAYER_BASELINE_MOVESPEED,
     computerColor: parseColor(PADDLE_COMPUTER_COLOR, false),
-    computerSpeed: PADDLE_COMPUTER_MOVESPEED,
-    musicVolume : 1,
-    swooce: function() {
-        console.log('swooce');
+    computerSpeed: PADDLE_COMPUTER_BASELINE_MOVESPEED,
+    musicVolume: 1,
+    soundVolume: 1,
+    resetGame: function () {
+        playerScore = 0;
+        computerScore = 0;
+        playerScoreDisplay.setNumber(playerScore);
+        computerScoreDisplay.setNumber(playerScore);
+        dx = INIT_DX;
+        dy = INIT_DY;
+        pause = 120;
+        server = 2;
+        stillCollidingWithPlayer = false;
+        ball.position.set(0, 0, BALL_RADIUS);
+        stillCollidingWithWall = false;
+        playerPaddle.position.set(0, -(PLAYFIELD_HEIGHT / 2) + PADDLE_HEIGHT / 2, PADDLE_DEPTH/2);
+        playerPaddle.rotation.z = 0;
     },
+    resetCamera: function() {controls.reset()}
 };
 
 var sound_targets_start;
 var sound_targets_loop;
+var paddleComputerMoveSpeed = PADDLE_COMPUTER_BASELINE_MOVESPEED;
+var paddlePlayerMoveSpeed = PADDLE_PLAYER_BASELINE_MOVESPEED;
 
-var updateBallSpeed = function(ballSpeed, disableSpeedMeter) {};
-var updateBallProgress = function(ballProgress, disableProgressMeter) {};
+var updateBallSpeed = function (ballSpeed, disableSpeedMeter) {
+};
+var updateBallProgress = function (ballProgress, disableProgressMeter) {
+};

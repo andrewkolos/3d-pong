@@ -18,10 +18,12 @@ function init() {
 
     scene.add(cameraParent);
 
-    new THREE.OrbitControls(camera, renderer.domElement);
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
     //controls.addEventListener('change', render);
 
     createGUI();
+
+    loadStats();
 
     createPlayField();
 
@@ -56,11 +58,23 @@ function createGUI() {
     colorFolder.open();
 
     difficultyFolder = gui.addFolder('Difficulty');
-    difficultyFolder.add(config, 'playerSpeed', 0, 1);
-    difficultyFolder.add(config, 'computerSpeed', 0, 1);
+    difficultyFolder.add(config, 'playerSpeed', 0, 1.25, 0.05).setValue(1);
+    difficultyFolder.add(config, 'computerSpeed', 0, 2, 0.05).setValue(1);
     difficultyFolder.open();
-    gui.add(config, 'musicVolume', 0, 1);
-    gui.add(config, 'swooce');
+
+    var volumeFolder = gui.addFolder('Volume');
+    volumeFolder.add(config, 'musicVolume', 0, 1, 0.02).setValue(0.75);
+    volumeFolder.add(config, 'soundVolume', 0, 1, 0.02).setValue(1);
+    volumeFolder.open();
+    gui.add(config, 'resetGame');
+    gui.add(config, 'resetCamera');
+}
+
+function loadStats() {
+    stats = new Stats();
+    stats.dom.style.width = 200;
+    stats.showPanel(0);
+    document.body.appendChild(stats.dom);
 }
 
 function onResize() {

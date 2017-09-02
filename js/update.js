@@ -1,8 +1,10 @@
 function render() {
+    stats.begin();
     moveBallAndPaddles();
 
     updateConfig();
 
+    stats.end();
     requestAnimationFrame(render);
 
     renderer.render(scene, camera);
@@ -13,14 +15,21 @@ function updateConfig() {
     computerPaddle.material.color.set(cssStringToColor(config.computerColor));
     sound_targets_start.volume = config.musicVolume;
     sound_targets_loop.volume = config.musicVolume;
+    sounds_cheers.forEach(function(audio) {audio.volume = config.soundVolume});
+    sounds_hits.forEach(function(audio) {audio.volume = config.soundVolume});
+    paddlePlayerMoveSpeed = PADDLE_PLAYER_BASELINE_MOVESPEED * config.playerSpeed;
+    paddleComputerMoveSpeed = PADDLE_COMPUTER_BASELINE_MOVESPEED * config.computerSpeed;
 }
 
-var dx = INIT_DX;
-var dy = INIT_DY;
-var pause = 0;
-var server = 2;
-var stillCollidingWithPlayer = false;
-var stillCollidingWithWall = false;
+function initBall() {
+    dx = INIT_DX;
+    dy = INIT_DY;
+    pause = 0;
+    server = 2;
+    stillCollidingWithPlayer = false;
+    stillCollidingWithWall = false;
+}
+initBall();
 
 function moveBallAndPaddles() {
     var cameraShaking = false;
@@ -88,22 +97,22 @@ function moveBallAndPaddles() {
         var y = gp.axes[1];
         var r = Math.hypot(x, y);
         if (r > 0.1) {
-            playerPaddleSpeed.x = PADDLE_PLAYER_MOVESPEED * x;
-            playerPaddleSpeed.y = -PADDLE_PLAYER_MOVESPEED * y;
+            playerPaddleSpeed.x = paddlePlayerMoveSpeed * x;
+            playerPaddleSpeed.y = -paddlePlayerMoveSpeed * y;
         }
     }
     // move player paddle
     if (Key.isDown(Key.A)) {
-        playerPaddleSpeed.x -= PADDLE_PLAYER_MOVESPEED;
+        playerPaddleSpeed.x -= paddlePlayerMoveSpeed;
     }
     if (Key.isDown(Key.D)) {
-        playerPaddleSpeed.x += PADDLE_PLAYER_MOVESPEED;
+        playerPaddleSpeed.x += paddlePlayerMoveSpeed;
     }
     if (Key.isDown(Key.W)) {
-        playerPaddleSpeed.y += PADDLE_PLAYER_MOVESPEED;
+        playerPaddleSpeed.y += paddlePlayerMoveSpeed;
     }
     if (Key.isDown(Key.S)) {
-        playerPaddleSpeed.y -= PADDLE_PLAYER_MOVESPEED;
+        playerPaddleSpeed.y -= paddlePlayerMoveSpeed;
     }
     var newPlayerX = playerPaddle.position.x + playerPaddleSpeed.x;
     var newPlayerY = playerPaddle.position.y + playerPaddleSpeed.y;
@@ -132,13 +141,13 @@ function moveBallAndPaddles() {
     // move computer paddle
     if (ball.position.x > computerPaddle.position.x) {
         if (computerPaddle.position.x < PLAYFIELD_WIDTH / 2 - PADDLE_WIDTH / 2) {
-            computerPaddle.position.x += PADDLE_COMPUTER_MOVESPEED;
+            computerPaddle.position.x += paddleComputerMoveSpeed;
             if (ball.position.x < computerPaddle.position.x)
                 computerPaddle.position.x = ball.position.x;
         }
     } else {
         if (computerPaddle.position.x > -(PLAYFIELD_WIDTH / 2) + PADDLE_WIDTH / 2) {
-            computerPaddle.position.x -= PADDLE_COMPUTER_MOVESPEED;
+            computerPaddle.position.x -= paddleComputerMoveSpeed;
             if (ball.position.x > computerPaddle.position.x)
                 computerPaddle.position.x = ball.position.x;
         }
