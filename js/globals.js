@@ -23,6 +23,8 @@ var playerScore = 0;
 var playerScoreDisplay;
 var computerScore = 0;
 var computerScoreDisplay;
+var playerScoreMesh;
+var computerScoreMesh;
 
 var scoreboardLight;
 

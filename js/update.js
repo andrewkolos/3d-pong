@@ -12,7 +12,11 @@ function render() {
 
 function updateConfig() {
     playerPaddle.material.color.set(cssStringToColor(config.playerColor));
+    if (playerScoreMesh) // may not be defined if still loading font
+        playerScoreMesh.material.color.set(cssStringToColor(config.playerColor));
     computerPaddle.material.color.set(cssStringToColor(config.computerColor));
+    if (computerScoreMesh)
+        computerScoreMesh.material.color.set(cssStringToColor(config.computerColor));
     sound_targets_start.volume = config.musicVolume;
     sound_targets_loop.volume = config.musicVolume;
     sounds_cheers.forEach(function (audio) {

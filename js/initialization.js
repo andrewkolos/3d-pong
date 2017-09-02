@@ -59,8 +59,8 @@ function createGUI() {
     colorFolder.open();
 
     difficultyFolder = gui.addFolder('Difficulty');
-    difficultyFolder.add(config, 'playerSpeed', 0, 1.25, 0.05).setValue(1);
-    difficultyFolder.add(config, 'computerSpeed', 0, 2, 0.05).setValue(1);
+    difficultyFolder.add(config, 'playerSpeed', 0.5, 1.25, 0.05).setValue(1);
+    difficultyFolder.add(config, 'computerSpeed', 0.5, 1.25, 0.05).setValue(1);
     difficultyFolder.open();
 
     var volumeFolder = gui.addFolder('Volume');
@@ -158,16 +158,16 @@ function createScoreBoard() {
         var playerTextGeometry = new THREE.TextGeometry("P1", {
             font: font,
             size: 1,
-            height: 0,
+            height: 0.25,
             curveSegments: 12,
             bevelEnabled: true,
             bevelThickness: .05,
             bevelSize: .05,
-            bevelSegments: 5
+            bevelSegments: 8
         });
 
         var playerScoreMaterial = new THREE.MeshPhongMaterial({color: PADDLE_PLAYER_COLOR});
-        var playerScoreMesh = new THREE.Mesh(playerTextGeometry, playerScoreMaterial);
+        playerScoreMesh = new THREE.Mesh(playerTextGeometry, playerScoreMaterial);
         playerScoreMesh.rotation.x = 90 * Math.PI / 180;
         playerScoreMesh.receiveShadow = true;
         playerScoreMesh.castShadow = true;
@@ -180,16 +180,16 @@ function createScoreBoard() {
         var computerTextGeometry = new THREE.TextGeometry("P2", {
             font: font,
             size: 1,
-            height: 0,
+            height: 0.25,
             curveSegments: 12,
             bevelEnabled: true,
             bevelThickness: .05,
             bevelSize: .05,
-            bevelSegments: 5
+            bevelSegments: 8
         });
 
         var computerScoreMaterial = new THREE.MeshPhongMaterial({color: PADDLE_COMPUTER_COLOR});
-        var computerScoreMesh = new THREE.Mesh(computerTextGeometry, computerScoreMaterial);
+        computerScoreMesh = new THREE.Mesh(computerTextGeometry, computerScoreMaterial);
         computerScoreMesh.rotation.x = 90 * Math.PI / 180;
         computerScoreMesh.receiveShadow = true;
         computerScoreMesh.castShadow = true;
@@ -201,24 +201,6 @@ function createScoreBoard() {
             SCOREBOARD_POS_Y - 0.25,
             SCOREBOARD_POS_Z + 0.80);
         scene.add(computerScoreMesh);
-
-        /*var ballSpeedGeometry = new THREE.TextGeometry("Ball Speed", {
-            font: font,
-            size: 0.8,
-            height: 0,
-            curveSegments: 4,
-            bevelEnabled: true,
-            bevelThickness: .20,
-            bevelSize: .04,
-            bevelSegments: 20
-        });
-        var ballSpeedMaterial = new THREE.MeshPhongMaterial({color: 0x673AB7});
-        ballSpeedMesh = new THREE.Mesh(ballSpeedGeometry, ballSpeedMaterial);
-        ballSpeedMesh.position.set(SCOREBOARD_POS_X - SCOREBOARD_WIDTH / 2 + 1, SCOREBOARD_POS_Y - 0.25, SCOREBOARD_POS_Z - SCOREBOARD_DEPTH / 4);
-        ballSpeedMesh.rotation.x = 90 * Math.PI / 180;
-        ballSpeedMesh.castShadow = true;
-        ballSpeedMesh.receiveShadow = true;
-        scene.add(ballSpeedMesh);*/
 
         function createPlane(x, y, z, width, height, color) {
             var geometry = new THREE.PlaneGeometry(width, height, 12, 12);
@@ -562,11 +544,11 @@ function loadSounds() {
     var one = new Audio("sounds/1.mp3");
     var one_u_5 = new Audio("sounds/1_pitchup_5.mp3");
     var one_u_10 = new Audio("sounds/1_pitchup_10.mp3");
+    var one_u_15 = new Audio("sounds/1_pitchup_15.mp3");
     var one_d_5 = new Audio("sounds/1_pitchdown_5.mp3");
     var one_d_10 = new Audio("sounds/1_pitchdown_10.mp3");
-    var three = new Audio("sounds/3.mp3");
-    var five = new Audio("sounds/5.mp3");
-    sounds_hits = [one, one_u_5, one_u_10, one_d_5, one_d_10, three, five];
+    var one_d_15 = new Audio("sounds/1_pitchdown_15.mp3");
+    sounds_hits = [one, one_u_5, one_u_10, one_d_5, one_d_10, one_u_15, one_d_15];
 
     var cheer = new Audio("sounds/cheer.mp3");
     var cheer2 = new Audio("sounds/cheer2.mp3");
