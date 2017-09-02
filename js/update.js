@@ -18,7 +18,7 @@ function moveBallAndPaddles() {
     function moveBall() {
         var vec = new THREE.Vector3(dx, dy, 0);
         var dist = vec.length();
-        if(dist > BALL_SPEED_LIMIT) {
+        if(dist > BALL_SPEED_LIMIT) { // cap speed
             vec.normalize().multiplyScalar(BALL_SPEED_LIMIT);
             dx = vec.x;
             dy = vec.y;
@@ -26,7 +26,7 @@ function moveBallAndPaddles() {
         }
         var angle = dist/BALL_RADIUS;
         ball.position.add(vec);
-        vec2 = new THREE.Vector3(-dy, dx, 0).normalize();
+        vec2 = new THREE.Vector3(-dy, dx, 0).normalize(); // axis of rotaiton
         var rotation = new THREE.Matrix4();
         rotation.makeRotationAxis(vec2, angle);
         ballInner.applyMatrix(rotation);
@@ -36,10 +36,10 @@ function moveBallAndPaddles() {
         if(shakeFactor > 0) {
             cameraShaking = true;
 
-            var bgColor = Math.floor(0x77*Math.sqrt(Math.min(shakeFactor, 1))) * 0x10000;
+            var bgColor = Math.floor(0x77*Math.sqrt(Math.min(shakeFactor, 1))) * 0x10000; // math.sqrt provides a color curve
             renderer.setClearColor(bgColor, 1);
 
-            var shakeX = (Math.random()*2-1)*SHAKE_MAX_X*shakeFactor;
+            var shakeX = (Math.random()*2-1)*SHAKE_MAX_X*shakeFactor; // [-SHAKE_MAX, SHAKE_MAX)
             var shakeY = (Math.random()*2-1)*SHAKE_MAX_Y*shakeFactor;
             var shakeZ = (Math.random()*2-1)*SHAKE_MAX_Z*shakeFactor;
             cameraParent.position.set(shakeX, shakeY, shakeZ);
