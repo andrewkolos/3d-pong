@@ -89,7 +89,12 @@ var config = {
         playerPaddle.position.set(0, -(PLAYFIELD_HEIGHT / 2) + PADDLE_HEIGHT / 2, PADDLE_DEPTH/2);
         playerPaddle.rotation.z = 0;
     },
-    resetCamera: function() {controls.reset()}
+    resetCamera: function() {controls.reset()},
+    CONTROLS: function() {
+        alert("Move using W/S/A/D. Rotate using Q,E or LEFT/UP/RIGHT.\n\n" +
+              "The camera can be adjusted with the mouse buttons and scroll wheel.\n\n"+
+             "If you have an Xbox controller, try plugging it in and restarting the browser! Use the left stick to move, and the right to tilt.");
+    }
 };
 
 var sound_targets_start;

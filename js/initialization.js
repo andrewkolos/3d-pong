@@ -64,11 +64,12 @@ function createGUI() {
     difficultyFolder.open();
 
     var volumeFolder = gui.addFolder('Volume');
-    volumeFolder.add(config, 'musicVolume', 0, 1, 0.02).setValue(0.75);
-    volumeFolder.add(config, 'soundVolume', 0, 1, 0.02).setValue(1);
+    volumeFolder.add(config, 'musicVolume', 0, 1, 0.01).setValue(0.75);
+    volumeFolder.add(config, 'soundVolume', 0, 1, 0.01).setValue(1);
     volumeFolder.open();
     gui.add(config, 'resetGame');
     gui.add(config, 'resetCamera');
+    gui.add(config, 'CONTROLS');
 }
 
 function loadStats() {
