@@ -168,7 +168,7 @@ function moveBallAndPaddles() {
     }
 
     if (Key.oneDown([Key.Q, Key.RIGHTARROW, Key.UPARROW, Key.LEFTARROW, Key.E])) {
-        console.log(playerPaddle.rotation.z % Math.PI);
+
         if (Key.oneDown([Key.Q, Key.LEFTARROW, Key.RIGHTARROW, Key.E])) {
             if (Key.isDown(Key.Q) || Key.isDown(Key.LEFTARROW)) {
                 playerPaddle.rotateZ(Math.PI / 48);
