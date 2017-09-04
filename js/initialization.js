@@ -22,7 +22,6 @@ function init() {
     controls.enableKeys = false;
     //controls.addEventListener('change', render);
 
-    createGUI();
 
     loadStats();
 
@@ -40,6 +39,8 @@ function init() {
 
     loadSounds();
 
+    createGUI();
+
     gamepad = new PxGamepad();
     gamepad.start();
     if (gamepad.getGamepad())
@@ -48,7 +49,7 @@ function init() {
         $('#gamepad-image').attr('src', 'img/disconnected.png');
         $('#gamepad-image').css('cursor', 'pointer');
         $('#gamepad-image').click(function () {
-            alert("No gamepad detected. If you have one plugged in, try pressing a button. Otherwise, try restarting your browser.\n\n"+
+            alert("No gamepad detected. If you have one plugged in, try pressing a button. Otherwise, try restarting your browser.\n\n" +
                 "You can test your gamepad at http://html5gamepad.com/");
         });
     }
@@ -68,6 +69,14 @@ function createGUI() {
     colorFolder.addColor(config, 'computerColor');
     colorFolder.open();
 
+    var lightsFolder = gui.addFolder('Lights');
+    lightsFolder.add(config, 'directionalLight', 0, 2).setValue(INIT_DIR_LIGHT_BRIGHTNESS);
+    lightsFolder.add(config, 'hemisphereLight', 0, 2).setValue(INIT_HEMI_LIGHT_BRIGHTNESS);
+    lightsFolder.add(config, 'ambientLight', 0, 1).setValue(INIT_AMBIENT_LIGHT_BRIGHTNESS);
+    lightsFolder.add(config, 'scoreLight', 0, 6).setValue(INIT_SCORE_LIGHT_BRIGHTNESS);
+    lightsFolder.add(config, 'lightHelpers');
+    lightsFolder.open();
+
     difficultyFolder = gui.addFolder('Difficulty');
     difficultyFolder.add(config, 'playerSpeed', 0.5, 1.25, 0.05).setValue(1);
     difficultyFolder.add(config, 'computerSpeed', 0.5, 1.25, 0.05).setValue(1);
@@ -80,6 +89,7 @@ function createGUI() {
     gui.add(config, 'resetGame');
     gui.add(config, 'resetCamera');
     gui.add(config, 'CONTROLS');
+
 }
 
 function loadStats() {
@@ -487,6 +497,7 @@ function createScoreBoard() {
 function createBall() {
     var geomtry = new THREE.SphereGeometry(BALL_RADIUS, BALL_NUM_SEGMENTS, BALL_NUM_SEGMENTS);
     var material = new THREE.MeshPhongMaterial();
+
     material.map = THREE.ImageUtils.loadTexture('img/soccer1.jpg');
     ballInner = new THREE.Mesh(geomtry, material);
     ballInner.receiveShadow = true;
@@ -503,11 +514,11 @@ function createLights() {
     // We choose directional light as it can be used to simulate sunlight.
     // See three.js documentation.
 
-    var dirLight1 = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight1 = new THREE.DirectionalLight(0xffffff, INIT_DIR_LIGHT_BRIGHTNESS);
     dirLight1.position.set(-7, -5, 8);
     dirLight1.castShadow = true; // expensive
     dirLight1.shadow.camera.near = 4;
-    dirLight1.shadow.camera.far = camera.far;
+    dirLight1.shadow.camera.far = 20;
     dirLight1.shadow.camera.left = -7;
     dirLight1.shadow.camera.right = 7;
     dirLight1.shadow.camera.top = 12;
@@ -516,7 +527,7 @@ function createLights() {
     dirLight1.shadow.mapSize.height = 2048;
     scene.add(dirLight1);
 
-    scoreboardLight = new THREE.SpotLight(0xffffff, 2);
+    scoreboardLight = new THREE.SpotLight(0xffffff, INIT_SCORE_LIGHT_BRIGHTNESS);
     scoreboardLight.position.set(SCOREBOARD_POS_X, SCOREBOARD_POS_Y - 10, SCOREBOARD_POS_Z - 20);
     scoreboardLight.target = scoreboardBase;
     scoreboardLight.angle = 0.6;
@@ -531,24 +542,20 @@ function createLights() {
     scene.add(scoreboardLight);
 
 
-    var hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
+    hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, INIT_HEMI_LIGHT_BRIGHTNESS);
     hemiLight.color.setHSL(0.6, 1, 0.6);
     hemiLight.groundColor.setHSL(0.095, 1, 0.75);
     hemiLight.position.set(0, 0, 10);
     scene.add(hemiLight);
 
-    var ambientLight = new THREE.AmbientLight(0xffffff, 0.10);
+    ambientLight = new THREE.AmbientLight(0xffffff, INIT_AMBIENT_LIGHT_BRIGHTNESS);
     scene.add(ambientLight);
 
-    if (DEBUG) {
-        var dirHelper = new THREE.DirectionalLightHelper(dirLight1);
-        scene.add(dirHelper);
-        scene.add(new THREE.CameraHelper(dirLight1.shadow.camera));
-        var hemiHelper = new THREE.HemisphereLightHelper(hemiLight);
-        scene.add(hemiHelper);
-        scene.add(new THREE.SpotLightHelper(scoreboardLight));
-        scene.add(new THREE.CameraHelper(scoreboardLight.shadow.camera));
-    }
+    dirHelper = new THREE.DirectionalLightHelper(dirLight1);
+    dirShadow = new THREE.CameraHelper(dirLight1.shadow.camera);
+    hemiHelper = new THREE.HemisphereLightHelper(hemiLight);
+    scoreboardHelper = new THREE.SpotLightHelper(scoreboardLight);
+    scoreboardShadow = new THREE.CameraHelper(scoreboardLight.shadow.camera);
 }
 
 function loadSounds() {
@@ -565,7 +572,6 @@ function loadSounds() {
 
     var cheer = new Audio("sounds/cheer.mp3");
     var cheer2 = new Audio("sounds/cheer2.mp3");
-    var ohno = new Audio("sounds/ohno.mp3");
     sounds_cheers = [cheer, cheer2];
 
     sound_targets_start = new Audio("sounds/targets_start.mp3");

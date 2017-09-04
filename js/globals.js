@@ -26,8 +26,6 @@ var computerScoreDisplay;
 var playerScoreMesh;
 var computerScoreMesh;
 
-var scoreboardLight;
-
 var sound_applause1;
 var sound_applause2;
 var sound_winner;
@@ -41,6 +39,22 @@ var gamepad;
 var gui;
 var colorFolder;
 var difficultyFolder;
+
+var directionalLightBrightness;
+var ambientLightBrightness;
+var scoreboardLightBrightness;
+
+var dirLight1;
+var hemiLight;
+var ambientLight;
+var scoreboardLight;
+var dirHelper;
+var dirShadow;
+var hemiHelper;
+var ambientLightHelper;
+var scoreboardHelper;
+var scoreboardShadow;
+
 
 function parseColor(color, toNumber) {
     if (toNumber === true) {
@@ -70,6 +84,11 @@ function cssStringToColor(color) {
 var config = {
     playerColor: parseColor(PADDLE_PLAYER_COLOR, false),
     playerSpeed: PADDLE_PLAYER_BASELINE_MOVESPEED,
+    directionalLight: INIT_DIR_LIGHT_BRIGHTNESS,
+    hemisphereLight: INIT_HEMI_LIGHT_BRIGHTNESS,
+    scoreLight: INIT_SCORE_LIGHT_BRIGHTNESS,
+    ambientLight: INIT_AMBIENT_LIGHT_BRIGHTNESS,
+    lightHelpers: false,
     computerColor: parseColor(PADDLE_COMPUTER_COLOR, false),
     computerSpeed: PADDLE_COMPUTER_BASELINE_MOVESPEED,
     musicVolume: 1,

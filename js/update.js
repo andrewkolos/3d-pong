@@ -11,7 +11,10 @@ function render() {
     renderer.render(scene, camera);
 }
 
+var lightsFlag = config.lightHelpers;
+
 function updateConfig() {
+
     playerPaddle.material.color.set(cssStringToColor(config.playerColor));
     if (playerScoreMesh) // may not be defined if still loading font
         playerScoreMesh.material.color.set(cssStringToColor(config.playerColor));
@@ -34,10 +37,28 @@ function updateConfig() {
     else {
         $('#gamepad-image').attr('src', 'img/disconnected.png');
         $('#gamepad-image').css('cursor', 'pointer');
-        $('#gamepad-image').click(function () {
-            alert("No gamepad detected. If you have one plugged in, try pressing a button. Otherwise, try restarting your browser.\n\n"+
-                "You can test your gamepad at http://html5gamepad.com/");
-        });
+    }
+
+    dirLight1.intensity = config.directionalLight;
+    hemiLight.intensity = config.hemisphereLight;
+    ambientLight.intensity = config.ambientLight;
+    scoreboardLight.intensity = config.scoreLight;
+
+    if (config.lightHelpers !== lightsFlag) { // prevents repeated adding/removal of lights
+        if (config.lightHelpers) {
+
+            scene.add(dirHelper);
+            scene.add(dirShadow);
+            scene.add(hemiHelper);
+            scene.add(scoreboardHelper);
+            scene.add(scoreboardShadow);
+        } else {
+            scene.remove(dirHelper);
+            scene.remove(dirShadow);
+            scene.remove(hemiHelper);
+            scene.remove(scoreboardHelper);
+            scene.remove(scoreboardShadow);
+        }
     }
 }
 
