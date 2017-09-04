@@ -233,6 +233,7 @@ function createScoreBoard() {
         }
 
         var ballSpeedMeter = createPlane(BALL_SPEED_METER_POS_X, BALL_SPEED_METER_POS_Y + 0.01, BALL_SPEED_METER_POS_Z, BALL_SPEED_METER_WIDTH, BALL_SPEED_METER_HEIGHT, BALL_SPEED_METER_COLOR);
+        ballSpeedMeter.material = new THREE.MeshLambertMaterial({color: BALL_SPEED_METER_COLOR});
         scene.add(ballSpeedMeter);
         var partCount = BALL_SPEED_METER_PART_COLORS.length;
         var sepSize = BALL_SPEED_METER_SEPARATOR_SIZE;
