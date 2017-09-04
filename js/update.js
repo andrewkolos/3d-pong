@@ -46,7 +46,6 @@ function updateConfig() {
 
     if (config.lightHelpers !== lightsFlag) { // prevents repeated adding/removal of lights
         if (config.lightHelpers) {
-
             scene.add(dirHelper);
             scene.add(dirShadow);
             scene.add(hemiHelper);
@@ -60,6 +59,7 @@ function updateConfig() {
             scene.remove(scoreboardShadow);
         }
     }
+    lightsFlag = config.lightHelpers;
 }
 
 function initBall() {
