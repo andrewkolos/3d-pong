@@ -78,12 +78,12 @@ function createGUI() {
     lightsFolder.open();
 
     difficultyFolder = gui.addFolder('Difficulty');
-    difficultyFolder.add(config, 'playerSpeed', 0.5, 1.25, 0.05).setValue(1);
-    difficultyFolder.add(config, 'computerSpeed', 0.5, 1.25, 0.05).setValue(1);
+    difficultyFolder.add(config, 'playerSpeed', 0.5, 2, 0.05).setValue(1);
+    difficultyFolder.add(config, 'computerSpeed', 0.5, 2, 0.05).setValue(1);
     difficultyFolder.open();
 
     var volumeFolder = gui.addFolder('Volume');
-    volumeFolder.add(config, 'musicVolume', 0, 1, 0.01).setValue(0.75);
+    volumeFolder.add(config, 'musicVolume', 0, 1, 0.01).setValue(0.70);
     volumeFolder.add(config, 'soundVolume', 0, 1, 0.01).setValue(1);
     volumeFolder.open();
     gui.add(config, 'resetGame');
